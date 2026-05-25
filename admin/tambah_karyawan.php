@@ -42,27 +42,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $conn->begin_transaction();
 
             // 1. INSERT ke tabel users
-            $sql_user = "INSERT INTO users (username, password, nama_lengkap, outlet_id, is_active) 
-                         VALUES (?, ?, ?, ?, 1)";
+            $sql_user = "INSERT INTO users (username, password, nama_lengkap, outlet_id, is_active, id_role) 
+                         VALUES (?, ?, ?, ?, 1, ?)";
             $stmt_user = $conn->prepare($sql_user);
-            $stmt_user->bind_param("sssi", $username, $hashed_password, $nama_lengkap, $outlet_id);
+            $stmt_user->bind_param("sssii", $username, $hashed_password, $nama_lengkap, $outlet_id, $role_id_new);
 
             if (!$stmt_user->execute()) {
                 throw new Exception("Gagal menambahkan user: " . $stmt_user->error);
             }
             
-            $new_user_id = $stmt_user->insert_id;
             $stmt_user->close();
-
-            // 2. INSERT ke tabel user_roles
-            $sql_role = "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)";
-            $stmt_role = $conn->prepare($sql_role);
-            $stmt_role->bind_param("ii", $new_user_id, $role_id_new);
-            
-            if (!$stmt_role->execute()) {
-                throw new Exception("Gagal menetapkan role: " . $stmt_role->error);
-            }
-            $stmt_role->close();
 
             $conn->commit();
             $_SESSION['form_status'] = 'success';

@@ -10,10 +10,9 @@ $target_user_id = $_GET['id'] ?? 0;
 if ($action == 'delete' && $target_user_id > 0) {
     
     // 1. CEK ROLE TARGET (User yang mau dihapus itu role-nya apa?)
-    $sql_cek = "SELECT ur.role_id 
+    $sql_cek = "SELECT u.id_role as role_id 
                 FROM users u 
-                JOIN user_roles ur ON u.id = ur.user_id 
-                WHERE u.id = ?";
+                WHERE u.id_user = ?";
     $stmt = $conn->prepare($sql_cek);
     $stmt->bind_param("i", $target_user_id);
     $stmt->execute();
@@ -50,12 +49,11 @@ if ($action == 'delete' && $target_user_id > 0) {
         
         $conn->begin_transaction();
         try {
-            // Hapus Role dulu
-            $conn->query("DELETE FROM user_roles WHERE user_id = $target_user_id");
             // Hapus Detail
             $conn->query("DELETE FROM karyawan_details WHERE user_id = $target_user_id");
+            $conn->query("DELETE FROM karyawan WHERE id_user = $target_user_id");
             // Hapus User Utama
-            $conn->query("DELETE FROM users WHERE id = $target_user_id");
+            $conn->query("DELETE FROM users WHERE id_user = $target_user_id");
             
             $conn->commit();
             header("Location: manajemen_user.php?msg=Akun berhasil dihapus.");

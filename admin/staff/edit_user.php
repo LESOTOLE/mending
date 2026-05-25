@@ -8,9 +8,8 @@ $id = $_GET['id'] ?? 0;
 $my_role_id = $_SESSION['id_role'];
 
 // 1. AMBIL DATA USER & KARYAWAN LENGKAP
-$sql = "SELECT u.*, ur.id_role, k.*, k.id_outlet as outlet_id
+$sql = "SELECT u.*, k.*, k.id_outlet as outlet_id
         FROM users u 
-        JOIN user_roles ur ON u.id_user = ur.id_user 
         LEFT JOIN karyawan k ON u.id_user = k.id_user
         WHERE u.id_user = ?";
 $stmt = $conn->prepare($sql);

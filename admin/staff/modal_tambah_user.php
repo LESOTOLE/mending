@@ -55,19 +55,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         
         // --- 1. INSERT ke Tabel users ---
         $hashed_password = hashPassword($password);
-        $sql_user = "INSERT INTO users (username, password, nama_lengkap) VALUES (?, ?, ?)";
+        $sql_user = "INSERT INTO users (username, password, nama_lengkap, id_role) VALUES (?, ?, ?, ?)";
         $stmt_user = $conn->prepare($sql_user);
-        $stmt_user->bind_param("sss", $username, $hashed_password, $nama_lengkap);
+        $stmt_user->bind_param("sssi", $username, $hashed_password, $nama_lengkap, $target_role_id);
         $stmt_user->execute() or throw new Exception($stmt_user->error);
         $user_id = $conn->insert_id; 
         $stmt_user->close();
-
-        // --- 2. INSERT ke Tabel user_roles ---
-        $sql_role = "INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)";
-        $stmt_role = $conn->prepare($sql_role);
-        $stmt_role->bind_param("ii", $user_id, $target_role_id);
-        $stmt_role->execute() or throw new Exception($stmt_role->error);
-        $stmt_role->close();
         
         // --- 3. (Opsional) INSERT ke Detail Karyawan jika Role = Karyawan (3) ---
         if ($target_role_id == 3) {

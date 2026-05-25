@@ -50,5 +50,10 @@ function initSidebarToggle() {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
         onload="initSidebarToggle();"></script>
 
+<!-- AOS Animation JS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<!-- Custom Animations JS -->
+<script src="/mending/assets/js/animations.js"></script>
+
 </body>
 </html>

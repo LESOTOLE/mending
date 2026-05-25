@@ -22,10 +22,9 @@ try {
                 k.nama_lengkap, 
                 o.nama_outlet
             FROM users u
-            JOIN user_roles ur ON u.id_user = ur.id_user
             JOIN karyawan k ON u.id_user = k.id_user
             LEFT JOIN outlets o ON k.id_outlet = o.id_outlet 
-            WHERE ur.id_role = 3
+            WHERE u.id_role = 3
             ORDER BY o.nama_outlet ASC, k.nama_lengkap ASC"; 
     
     $stmt = $conn->prepare($sql);

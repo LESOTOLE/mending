@@ -95,7 +95,7 @@ include '../includes/header.php';
         <div class="col-xl-6 col-lg-8 col-md-10">
             <div class="card shadow-sm border-0 rounded-lg mt-3">
                 <div class="card-header bg-primary text-white text-center py-3">
-                    <h5 class="m-0 font-weight-bold"><i class="fas fa-user-shield mr-2"></i>Keamanan Akun</h5>
+                    <h5 class="m-0 text-white font-weight-bold"><i class="fas fa-user-shield mr-2"></i> Keamanan Akun</h5>
                 </div>
                 <div class="card-body p-4 p-md-5">
                     

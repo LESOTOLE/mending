@@ -68,34 +68,34 @@ GROUP BY DATE(tgl_masuk) ORDER BY tgl ASC";
 if ($role_id == 2) {
     $tgl_hari_ini = date('Y-m-d');
 
-    // 1. Total Staf Aktif (Role 3 & 4) - Menggunakan id_user sebagai kunci
+    // PERBAIKAN: Hapus JOIN user_roles, langsung baca u.id_role
+    // 1. Total Staf Aktif (Role 3 & 4) 
     $sql_count = "SELECT COUNT(DISTINCT k.id_user) as t
 FROM karyawan k
 JOIN users u ON k.id_user = u.id_user
-JOIN user_roles ur ON u.id_user = ur.id_user
-WHERE u.is_active = 1 AND ur.id_role IN (3, 4)";
+WHERE u.is_active = 1 AND u.id_role IN (3, 4)";
     $total_staff = $conn->query($sql_count)->fetch_assoc()['t'] ?? 0;
 
-    // 2. Total Hadir (Gunakan id_user atau kolom yang benar di tabel absensi)
+    // 2. Total Hadir
     $sql_absen = "SELECT COUNT(DISTINCT id_user) as t FROM absensi WHERE DATE(waktu_masuk) = '$tgl_hari_ini'";
-    $total_hadir = $conn->query($sql_absen)->fetch_assoc()['t'] ?? 0;
+    $total_hadir_hrd = $conn->query($sql_absen)->fetch_assoc()['t'] ?? 0;
 
+    // PERBAIKAN: Hapus JOIN user_roles, gabungkan users langsung dengan roles
     // 3. List Staf Terbaru
     $sql_staff = "SELECT k.nama_lengkap, o.nama_outlet, r.nama_role as role_name
 FROM karyawan k
 JOIN outlets o ON k.id_outlet = o.id_outlet
 JOIN users u ON k.id_user = u.id_user
-JOIN user_roles ur ON u.id_user = ur.id_user
-JOIN roles r ON ur.id_role = r.id_role
-WHERE r.id_role IN (3, 4)
+JOIN roles r ON u.id_role = r.id_role
+WHERE u.id_role IN (3, 4)
 ORDER BY k.id_user DESC LIMIT 5";
     $res_staff = $conn->query($sql_staff);
+
     // --- DATA GRAFIK GAJI (6 BULAN TERAKHIR) ---
-    // --- LOGIKA GRAFIK GAJI HRD ---
     $chart_gaji_labels = [];
     $chart_gaji_data = [];
 
-    // Gunakan 'deskripsi' sebagai kolom standar pengeluaran
+    // Gunakan 'keterangan' sebagai kolom standar pengeluaran
     $sql_gaji = "SELECT DATE_FORMAT(tanggal, '%b %Y') as bulan, SUM(nominal) as total
 FROM pengeluaran
 WHERE keterangan LIKE '%Gaji%'
@@ -328,9 +328,10 @@ ORDER BY tanggal ASC";
 
         <style>
             .welcome-banner {
-                background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-                border-radius: 15px;
-                color: white;
+                background: linear-gradient(135deg, rgba(112,0,255,0.4) 0%, rgba(0,240,255,0.4) 100%) !important;
+                border-radius: 20px !important;
+                color: white !important;
+                border: 1px solid rgba(255,255,255,0.2) !important;
             }
 
             .welcome-icon {
@@ -339,14 +340,16 @@ ORDER BY tanggal ASC";
                 position: absolute;
                 right: 30px;
                 bottom: -10px;
+                color: #00f0ff !important;
             }
 
             .card-absen {
-                transition: transform 0.2s;
+                transition: transform 0.2s, box-shadow 0.2s;
             }
 
             .card-absen:hover {
                 transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0, 240, 255, 0.4) !important;
             }
         </style>
 
@@ -479,12 +482,13 @@ ORDER BY tanggal ASC";
                         datasets: [{
                             label: 'Pendapatan',
                             data: <?php echo json_encode($chart_data); ?>,
-                            borderColor: '#4e73df',
-                            backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                            borderColor: '#00f0ff',
+                            backgroundColor: 'rgba(0, 240, 255, 0.1)',
                             fill: true,
                             tension: 0.4,
                             pointRadius: 5,
-                            pointBackgroundColor: '#4e73df'
+                            pointBackgroundColor: '#00f0ff',
+                            pointBorderColor: '#fff'
                         }]
                     },
                     options: {
@@ -499,13 +503,15 @@ ORDER BY tanggal ASC";
                             y: {
                                 beginAtZero: true,
                                 grid: {
-                                    color: '#f8f9fc'
-                                }
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                },
+                                ticks: { color: '#64748b' }
                             },
                             x: {
                                 grid: {
                                     display: false
-                                }
+                                },
+                                ticks: { color: '#64748b' }
                             }
                         }
                     }
@@ -525,18 +531,24 @@ ORDER BY tanggal ASC";
                         labels: <?php echo $json_gaji_labels; ?>,
                         datasets: [{
                             label: "Total Gaji",
-                            backgroundColor: "#1cc88a", // Ubah jadi hijau biar beda dengan owner
-                            hoverBackgroundColor: "#17a673",
-                            borderColor: "#1cc88a",
+                            backgroundColor: "#00ff88", 
+                            hoverBackgroundColor: "#00cc66",
+                            borderColor: "#00ff88",
                             data: <?php echo $json_gaji_data; ?>,
                         }],
                     },
                     options: {
                         maintainAspectRatio: false,
                         scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#64748b' }
+                            },
                             y: {
                                 beginAtZero: true,
+                                grid: { color: 'rgba(0, 0, 0, 0.05)' },
                                 ticks: {
+                                    color: '#64748b',
                                     callback: function(value) {
                                         return 'Rp ' + value.toLocaleString('id-ID');
                                     }

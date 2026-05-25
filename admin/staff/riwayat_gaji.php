@@ -84,12 +84,14 @@ include '../../includes/header.php';
                                 <tr>
                                     <td class="font-weight-bold text-dark text-center">
                                         <?php
-                                        $nama_bulan = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                                        echo $nama_bulan[$row['bulan']] . " " . $row['tahun'];
+                                        // Format 'bulan' (YYYY-MM) menjadi nama bulan dan tahun
+                                        $time = strtotime($row['bulan'] . "-01");
+                                        $nama_bulan = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
+                                        echo $nama_bulan[(int)date('m', $time)] . " " . date('Y', $time);
                                         ?>
                                     </td>
                                     <td>Rp <?php echo number_format($row['gaji_pokok'], 0, ',', '.'); ?></td>
-                                    <td class="text-success">+ Rp <?php echo number_format($row['tunjangan'], 0, ',', '.'); ?></td>
+                                    <td class="text-success">+ Rp <?php echo number_format($row['bonus'], 0, ',', '.'); ?></td>
                                     <td class="text-danger">- Rp <?php echo number_format($row['potongan'], 0, ',', '.'); ?></td>
                                     <td class="font-weight-bold text-primary">Rp <?php echo number_format($row['total_gaji'], 0, ',', '.'); ?></td>
                                     <td class="text-center">
@@ -131,7 +133,8 @@ include '../../includes/header.php';
 <script>
     function viewSlip(data) {
         const namaBulan = [null, 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-        const formattedDate = namaBulan[data.bulan] + " " + data.tahun;
+        const time = new Date(data.bulan + "-01");
+        const formattedDate = namaBulan[time.getMonth() + 1] + " " + time.getFullYear();
 
         let html = `
         <div class="text-center mb-4">
@@ -147,7 +150,7 @@ include '../../includes/header.php';
         
         <h6 class="font-weight-bold border-bottom pb-1">PENDAPATAN</h6>
         <div class="d-flex justify-content-between mb-1"><span>Gaji Pokok</span><span>Rp ${number_format(data.gaji_pokok)}</span></div>
-        <div class="d-flex justify-content-between mb-3 text-success"><span>Tunjangan/Bonus</span><span>+ Rp ${number_format(data.tunjangan)}</span></div>
+        <div class="d-flex justify-content-between mb-3 text-success"><span>Tunjangan/Bonus</span><span>+ Rp ${number_format(data.bonus)}</span></div>
         
         <h6 class="font-weight-bold border-bottom pb-1">POTONGAN</h6>
         <div class="d-flex justify-content-between mb-3 text-danger"><span>Denda Absensi</span><span>- Rp ${number_format(data.potongan)}</span></div>

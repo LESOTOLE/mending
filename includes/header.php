@@ -9,14 +9,17 @@
     <title><?php echo APP_NAME; ?> - ...</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.min.css">
     
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Link Web3 Theme -->
+    <link rel="stylesheet" href="/mending/assets/css/web3.css?v=<?= time() ?>">
+    
     <style>
-        /* Gaya Kustom Sidebar Biru (Dasar) */
+        /* Gaya Kustom Struktur Sidebar (Warna dikendalikan web3.css) */
         .sidebar {
-            background: linear-gradient(180deg, #007bff 0%, #0056b3 100%);
-            color: white;
             min-height: 100vh;
             width: 250px;
             flex-shrink: 0;
@@ -28,44 +31,46 @@
             display: flex;
             align-items: center;
             text-decoration: none;
-            transition: background-color 0.3s, color 0.3s;
+            transition: all 0.3s;
             border-radius: 5px;
             margin-bottom: 5px;
         }
         .sidebar a:hover:not(.active) {
             background-color: rgba(255, 255, 255, 0.1);
             color: white;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
         }
         .sidebar .active {
-            background-color: #FFFFFF2C; 
-            color: #FFFFFFFF; 
+            background-color: rgba(255, 255, 255, 0.15); 
+            color: #fff; 
             font-weight: bold;
-            border-left: 5px solid #00F7FFFF; 
+            border-left: 5px solid var(--primary); 
+            box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.1);
         }
         .sidebar .nav-link i {
             font-size: 1.1em;
             width: 25px;
             margin-right: 10px;
         }
-        .navbar-custom {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-        }
+        
         /* Gaya Logout Container */
         .sidebar .logout-container {
             padding: 10px 15px; 
-            background-color: #0069d9;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+            border-top: 1px solid var(--glass-border);
         }
         .sidebar .logout-link {
-            background-color: #dc3545; 
+            background: linear-gradient(90deg, #990033, var(--danger));
             color: white !important;
             text-align: center;
             padding: 10px 15px;
             display: block;
+            border-radius: 12px;
+            transition: 0.3s;
         }
         .sidebar .logout-link:hover {
-            background-color: #c82333 !important;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.5);
+            transform: translateY(-2px);
         }
 @media (max-width: 767.98px) {
     .sidebar {

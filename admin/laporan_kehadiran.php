@@ -28,10 +28,9 @@ try {
              WHERE a.id_user = u.id_user 
              AND MONTH(a.tanggal) = ? AND YEAR(a.tanggal) = ?) AS total_hadir
         FROM users u
-        JOIN user_roles ur ON u.id_user = ur.id_user
         JOIN karyawan k ON u.id_user = k.id_user  -- JOIN WAJIB
         LEFT JOIN outlets o ON k.id_outlet = o.id_outlet -- Link outlet dari karyawan
-        WHERE ur.id_role = 3  -- Hanya Role Karyawan
+        WHERE u.id_role = 3  -- Hanya Role Karyawan
         ORDER BY o.nama_outlet ASC, k.nama_lengkap ASC
     ";
     

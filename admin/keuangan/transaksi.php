@@ -6,7 +6,7 @@ require_once '../../includes/config.php';
 checkAuth([1, 4]);
 $page_title = "Kasir POS";
 $conn       = connectDB();
-$user_id    = $_SESSION['user_id'] ?? 0; // Perbaikan nama session
+$user_id    = $_SESSION['user_id'] ?? 0;
 
 // 2. LOGIKA OUTLET
 $user_outlet_id = $_SESSION['outlet_id'] ?? 0;
@@ -36,9 +36,8 @@ while ($row = $result_layanan->fetch_assoc()) {
 $karyawan_list = [];
 $sql_karyawan = "SELECT u.id_user, k.nama_lengkap 
                  FROM users u
-                 JOIN user_roles ur ON u.id_user = ur.id_user 
                  JOIN karyawan k ON u.id_user = k.id_user
-                 WHERE ur.id_role IN (3, 4) AND k.id_outlet = ? AND u.is_active = 1 
+                 WHERE u.id_role IN (3, 4) AND k.id_outlet = ? AND u.is_active = 1 
                  ORDER BY k.nama_lengkap ASC";
 $stmt = $conn->prepare($sql_karyawan);
 $stmt->bind_param("i", $user_outlet_id);
@@ -48,7 +47,7 @@ while ($row = $res_karyawan->fetch_assoc()) {
     $karyawan_list[] = $row;
 }
 
-// 5. AMBIL DATA PELANGGAN LAMA (Untuk Auto-complete)
+// 5. AMBIL DATA PELANGGAN LAMA
 $pelanggan_list = [];
 $res_pelanggan = $conn->query("SELECT id_pelanggan, nama_pelanggan, no_hp FROM pelanggan ORDER BY nama_pelanggan ASC");
 while ($row = $res_pelanggan->fetch_assoc()) {
@@ -57,7 +56,6 @@ while ($row = $res_pelanggan->fetch_assoc()) {
 
 $json_layanan = json_encode($layanan_list) ?: '[]';
 
-// Asumsi Anda punya header khusus POS yang tanpa sidebar agar fullscreen
 include '../../includes/header_pos.php';
 ?>
 
@@ -136,7 +134,6 @@ include '../../includes/header_pos.php';
         background: white;
     }
 
-    /* Custom Scrollbar */
     ::-webkit-scrollbar {
         width: 8px;
     }
@@ -197,7 +194,6 @@ include '../../includes/header_pos.php';
         </div>
 
         <div class="col-lg-5 col-md-5 cart-area shadow-lg">
-
             <div class="p-3 bg-primary text-white d-flex justify-content-between align-items-center flex-shrink-0">
                 <h5 class="mb-0 fw-bold"><i class="fas fa-shopping-basket me-2"></i> Keranjang Cucian</h5>
                 <span class="badge bg-white text-primary rounded-pill fs-6" id="cartCountBadge">0 Item</span>
@@ -213,7 +209,6 @@ include '../../includes/header_pos.php';
 
             <div class="checkout-footer">
                 <form id="formCheckout" action="proses_transaksi_pos.php" method="POST">
-
                     <input type="hidden" name="outlet_id" value="<?php echo $user_outlet_id; ?>">
                     <input type="hidden" name="items_data" id="itemsDataInput">
                     <input type="hidden" name="total_harga" id="totalHargaInput">
@@ -296,6 +291,7 @@ include '../../includes/header_pos.php';
     </div>
 </div>
 
+<!-- Modal Pencarian & Pengambilan -->
 <div class="modal fade" id="modalCariOrder" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow-lg">
@@ -306,24 +302,15 @@ include '../../includes/header_pos.php';
             <div class="modal-body bg-light">
                 <div class="input-group input-group-lg mb-3 shadow-sm">
                     <span class="input-group-text bg-white"><i class="fas fa-barcode"></i></span>
-                    <input type="text" id="inputCariOrder" class="form-control" placeholder="Ketik No Invoice, Nama, atau No HP..." autofocus>
+                    <input type="text" id="inputCariOrder" class="form-control" placeholder="Ketik No Invoice, Nama, atau No HP..." autocomplete="off">
                 </div>
                 <div id="hasilPencarian" class="bg-white rounded p-2" style="min-height: 200px; max-height: 400px; overflow-y: auto;">
-                    <div class="text-center text-muted mt-5">
-                        <i class="fas fa-keyboard fa-3x mb-2 opacity-25"></i>
-                        <p>Mulai ketik untuk mencari nota.</p>
-                    </div>
+                    <!-- Hasil AJAX akan masuk ke sini -->
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<form id="formAksiCepat" action="proses_aksi_pos.php" method="POST">
-    <input type="hidden" name="aksi" id="aksi_cepat">
-    <input type="hidden" name="id_transaksi" id="id_cepat">
-    <input type="hidden" name="bayar_susulan" id="bayar_cepat">
-</form>
 
 <?php include '../../includes/footer.php'; ?>
 
@@ -331,7 +318,6 @@ include '../../includes/header_pos.php';
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // --- GLOBAL VARIABLES ---
     const layananData = <?php echo $json_layanan; ?>;
     let keranjang = [];
     const formatRupiah = (n) => new Intl.NumberFormat('id-ID', {
@@ -340,11 +326,10 @@ include '../../includes/header_pos.php';
         minimumFractionDigits: 0
     }).format(n);
 
-    // 1. FUNGSI KERANJANG
+    // --- FUNGSI KERANJANG & UI (Sama seperti sebelumnya) ---
     window.addToCart = function(id) {
         const item = layananData.find(i => i.id_layanan == id);
         if (!item) return;
-
         const exist = keranjang.find(i => i.id == id);
         if (exist) {
             exist.qty += 1;
@@ -399,8 +384,7 @@ include '../../includes/header_pos.php';
                         <small class="text-primary fw-bold">${formatRupiah(item.harga)}</small>
                     </div>
                     <div class="d-flex align-items-center gap-1">
-                        <input type="number" step="0.1" class="qty-input-box py-1" value="${item.qty}" oninput="window.updateQtyManual(${i}, this.value)">
-                        <small class="fw-bold text-muted">${item.satuan}</small>
+                    <input type="number" step="0.01" class="qty-input-box py-1" value="${item.qty}" onchange="window.updateQtyManual(${i}, this.value)" onclick="this.select()">                        <small class="fw-bold text-muted">${item.satuan}</small>
                     </div>
                     <div class="text-end" style="width: 25%">
                         <div class="fw-bold text-dark small">${formatRupiah(sub)}</div>
@@ -417,11 +401,9 @@ include '../../includes/header_pos.php';
         hitungKembalian();
     }
 
-    // 2. FUNGSI KALKULASI UANG
     function hitungKembalian() {
         let t = parseFloat(document.getElementById('totalHargaInput').value) || 0;
         let b = parseFloat(document.getElementById('input_bayar').value) || 0;
-
         let k = b - t;
         let el = document.getElementById('input_kembalian');
 
@@ -435,22 +417,14 @@ include '../../includes/header_pos.php';
         document.getElementById('kembalian_asli').value = k;
     }
 
-    // 3. EVENT JQUERY
     $(document).ready(function() {
-        // --- TAMBAHKAN KODE INI DI DALAM document.ready ---
-
-        // Mencegah Form Submit bawaan (Reload), Ganti dengan AJAX
+        // --- JQUERY EVENT LISTENER ---
         $('#formCheckout').on('submit', function(e) {
-            e.preventDefault(); // Stop reload
-
-            // Ambil semua input form
+            e.preventDefault();
             let formData = $(this).serialize();
-
-            // Simpan referensi tombol agar bisa dikembalikan nanti
             let btn = $('#btnCheckout');
             let originalBtnHtml = btn.html();
 
-            // Tampilkan loading di tombol
             btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> MEMPROSES...');
 
             $.ajax({
@@ -460,7 +434,6 @@ include '../../includes/header_pos.php';
                 dataType: 'json',
                 success: function(response) {
                     if (response.status === 'success') {
-                        // JIKA BERHASIL (PIN BENAR & MASUK DB)
                         Swal.fire({
                             title: 'Transaksi Berhasil!',
                             text: 'Nota telah diterbitkan.',
@@ -473,8 +446,6 @@ include '../../includes/header_pos.php';
                             if (result.isConfirmed) {
                                 window.open('../keuangan/cetak_struk.php?id=' + response.id_transaksi, '_blank');
                             }
-
-                            // Kosongkan form untuk order selanjutnya secara halus (tanpa reload)
                             keranjang = [];
                             renderCart();
                             $('#formCheckout')[0].reset();
@@ -484,10 +455,7 @@ include '../../includes/header_pos.php';
                             $('#status_pembayaran').removeClass('text-success border-success').addClass('text-danger border-danger');
                         });
                     } else {
-                        // JIKA GAGAL (MISAL PIN SALAH)
                         Swal.fire('Gagal!', response.message, 'error');
-
-                        // KUNCI PERBAIKAN: Hanya kosongkan kolom PIN, data lain aman!
                         $('input[name="auth_pin"]').val('').focus();
                     }
                 },
@@ -495,35 +463,29 @@ include '../../includes/header_pos.php';
                     Swal.fire('Error Sistem!', 'Tidak dapat terhubung ke server.', 'error');
                 },
                 complete: function() {
-                    // Kembalikan tombol seperti semula setelah selesai (sukses/gagal)
                     btn.prop('disabled', false).html(originalBtnHtml);
                 }
             });
         });
-        // Auto-fill Data Pelanggan jika dipilih dari Datalist
+
         $('#inputNamaPelanggan').on('input', function() {
             var val = $(this).val();
             var selectedOption = $('#pelangganOptions option').filter(function() {
                 return this.value === val;
             });
-
             if (selectedOption.length) {
-                // Jika pelanggan lama ditemukan
                 $('#id_pelanggan_lama').val(selectedOption.data('id'));
                 $('#inputHpPelanggan').val(selectedOption.data('hp')).prop('readonly', true).addClass('bg-light');
             } else {
-                // Jika pelanggan baru diketik
                 $('#id_pelanggan_lama').val('');
                 $('#inputHpPelanggan').val('').prop('readonly', false).removeClass('bg-light');
             }
         });
 
-        // Menampilkan Box Bayar jika Lunas
         $('#status_pembayaran').on('change', function() {
             if ($(this).val() === 'Lunas') {
                 $('#boxKalkulasi').slideDown();
                 $(this).removeClass('border-danger text-danger').addClass('border-success text-success');
-
                 if ($('#metode_pembayaran').val() === 'Tunai') {
                     $('#input_bayar').prop('readonly', false).focus();
                 }
@@ -537,21 +499,17 @@ include '../../includes/header_pos.php';
 
         $('#input_bayar').on('input', hitungKembalian);
 
-        // Kunci Input Bayar jika bukan Tunai
         $('#metode_pembayaran').on('change', function() {
             let m = $(this).val();
             let t = parseFloat($('#totalHargaInput').val()) || 0;
-
             if (m === 'Tunai') {
                 $('#input_bayar').prop('readonly', false).val('').focus();
             } else {
-                // Jika Transfer/QRIS, otomatis terisi sejumlah total tagihan
                 $('#input_bayar').prop('readonly', true).val(t);
             }
             hitungKembalian();
         });
 
-        // Fitur Pencarian Layanan (Kiri)
         $('#searchService').on('keyup', function() {
             let val = $(this).val().toLowerCase();
             $('.service-item-col').each(function() {
@@ -559,34 +517,41 @@ include '../../includes/header_pos.php';
             });
         });
 
-        // Fitur Pencarian Modal (Ambil Cucian)
-        // Catatan: Anda butuh file cari_transaksi_ajax.php untuk ini
+        // ==========================================
+        // FITUR MODAL PENCARIAN & AJAX BARU
+        // ==========================================
+
+        // Fungsi untuk mengambil data ke dalam Modal
+        window.loadDataNota = function(keyword) {
+            $('#hasilPencarian').html('<div class="text-center my-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
+            $.post('cari_transaksi_ajax.php', {
+                keyword: keyword,
+                outlet_id: "<?php echo $user_outlet_id; ?>"
+            }, function(data) {
+                $('#hasilPencarian').html(data);
+            });
+        };
+
+        // Event saat modal pertama kali dibuka (Auto Load Default List)
+        $('#modalCariOrder').on('shown.bs.modal', function() {
+            $('#inputCariOrder').val(''); // Pastikan kosong
+            window.loadDataNota(''); // Kirim string kosong untuk trigger default list
+            $('#inputCariOrder').focus();
+        });
+
+        // Fitur Pencarian Real-time Modal
         $('#inputCariOrder').on('keyup', function() {
-            let k = $(this).val();
-            if (k.length > 2) {
-                $('#hasilPencarian').html('<div class="text-center my-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
-                $.post('cari_transaksi_ajax.php', {
-                    keyword: k,
-                    outlet_id: "<?php echo $user_outlet_id; ?>"
-                }, function(data) {
-                    $('#hasilPencarian').html(data);
-                });
-            }
+            window.loadDataNota($(this).val());
         });
     });
 
-    // 4. NOTIFIKASI SUCCESS & PRINT
-    <?php
-    if (isset($_SESSION['pos_status']) && $_SESSION['pos_status'] == 'success') {
-    }
-    ?>
-    // --- FUNGSI AKSI CEPAT DENGAN POP-UP INTERAKTIF ---
+    // --- FUNGSI LUNASI & AMBIL (Tanpa Refresh Layar / Modal Tetap Buka) ---
     window.aksiLunasi = (id, nama, total) => {
         Swal.fire({
             title: 'Pelunasan Tagihan',
             html: `Atas Nama: <b class="text-primary">${nama}</b><br>Sisa Tagihan: <b class="text-danger">Rp ${formatRupiah(total)}</b><br><br><small class="text-muted">Masukkan nominal bayar di bawah ini:</small>`,
             input: 'number',
-            inputValue: total, // Nominal otomatis terisi sesuai sisa tagihan
+            inputValue: total,
             showCancelButton: true,
             confirmButtonColor: '#1cc88a',
             cancelButtonColor: '#858796',
@@ -594,26 +559,37 @@ include '../../includes/header_pos.php';
             cancelButtonText: 'Batal'
         }).then(r => {
             if (r.isConfirmed) {
-                // Validasi jika yang dimasukkan kurang dari tagihan
                 if (r.value < total) {
                     Swal.fire('Oops!', 'Nominal bayar tidak boleh kurang dari sisa tagihan.', 'warning');
                     return;
                 }
 
-                // Tampilkan loading sebentar biar terasa interaktif
                 Swal.fire({
                     title: 'Memproses...',
-                    text: 'Mohon tunggu sebentar',
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();
                     }
                 });
 
-                $('#aksi_cepat').val('lunasi');
-                $('#id_cepat').val(id);
-                $('#bayar_cepat').val(r.value);
-                $('#formAksiCepat').submit();
+                // Eksekusi PHP di belakang layar via AJAX
+                $.post('proses_aksi_pos.php', {
+                    aksi: 'lunasi',
+                    id_transaksi: id,
+                    bayar_susulan: r.value
+                }).done(function() {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: 'Tagihan berhasil dilunasi.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    // Refresh isi Modal TANPA menutupnya
+                    window.loadDataNota($('#inputCariOrder').val());
+                }).fail(function() {
+                    Swal.fire('Error', 'Gagal memproses data.', 'error');
+                });
             }
         });
     };
@@ -621,7 +597,7 @@ include '../../includes/header_pos.php';
     window.aksiAmbil = (id, nama) => {
         Swal.fire({
             title: 'Serahkan Cucian?',
-            html: `Nota atas nama <b class="text-primary">${nama}</b> akan ditandai sebagai selesai dan diserahkan ke pelanggan.`,
+            html: `Nota atas nama <b class="text-primary">${nama}</b> akan ditandai sebagai selesai dan diserahkan.`,
             icon: 'info',
             showCancelButton: true,
             confirmButtonColor: '#4e73df',
@@ -638,33 +614,24 @@ include '../../includes/header_pos.php';
                     }
                 });
 
-                $('#aksi_cepat').val('ambil');
-                $('#id_cepat').val(id);
-                $('#formAksiCepat').submit();
+                // Eksekusi PHP di belakang layar via AJAX
+                $.post('proses_aksi_pos.php', {
+                    aksi: 'ambil',
+                    id_transaksi: id
+                }).done(function() {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: 'Cucian telah diserahkan ke pelanggan.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    // Refresh isi Modal TANPA menutupnya
+                    window.loadDataNota($('#inputCariOrder').val());
+                }).fail(function() {
+                    Swal.fire('Error', 'Gagal memproses data.', 'error');
+                });
             }
         });
     };
 </script>
-<?php if (isset($_SESSION['pos_status'])): ?>
-    <script>
-        // Tentukan icon dan pesan berdasarkan isi session
-        let iconType = '<?php echo $_SESSION['pos_status']; ?>'; // 'success' atau 'error'
-        let pesan = '<?php echo isset($_SESSION['pos_msg']) ? $_SESSION['pos_msg'] : "Transaksi Berhasil Diproses!"; ?>';
-
-        Swal.fire({
-            icon: iconType,
-            title: iconType === 'success' ? 'Berhasil!' : 'Gagal!',
-            text: pesan,
-            confirmButtonColor: iconType === 'success' ? '#1cc88a' : '#e74a3b'
-        }).then((result) => {
-            // Opsional: Kalau mau langsung buka modal cari nota lagi setelah sukses
-            // $('#modalCariNota').modal('show'); 
-        });
-    </script>
-    <?php
-    // WAJIB DIHAPUS! Biar pop-upnya gak muncul terus-terusan tiap kali halaman di-refresh
-    unset($_SESSION['pos_status']);
-    unset($_SESSION['pos_msg']);
-    unset($_SESSION['pos_id_transaksi']);
-    ?>
-<?php endif; ?>

@@ -93,8 +93,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // 1. INSERT users
         $pass_hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt1 = $conn->prepare("INSERT INTO users (username, password, pin, is_active) VALUES (?, ?, ?, 1)");
-        $stmt1->bind_param("sss", $username, $pass_hash, $pin);
+        $stmt1 = $conn->prepare("INSERT INTO users (username, password, pin, is_active, id_role) VALUES (?, ?, ?, 1, ?)");
+        $stmt1->bind_param("sssi", $username, $pass_hash, $pin, $target_role);
 
         if (!$stmt1->execute()) throw new Exception("Gagal membuat user login: " . $stmt1->error);
         $new_id_user = $conn->insert_id;
@@ -105,12 +105,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt2->bind_param("iissssssss", $new_id_user, $id_outlet, $nama_lengkap, $no_hp, $jenis_kelamin, $alamat, $tgl_gabung, $nik_ktp, $nama_bank, $no_rekening);
 
         if (!$stmt2->execute()) throw new Exception("Gagal menyimpan profil karyawan: " . $stmt2->error);
-
-        // 3. INSERT user_roles
-        $stmt3 = $conn->prepare("INSERT INTO user_roles (id_user, id_role) VALUES (?, ?)");
-        $stmt3->bind_param("ii", $new_id_user, $target_role);
-
-        if (!$stmt3->execute()) throw new Exception("Gagal mengatur hak akses: " . $stmt3->error);
 
         // --- SUKSES ---
         $conn->commit();

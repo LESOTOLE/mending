@@ -9,13 +9,12 @@ $id_user = $_GET['id'] ?? 0;
 $conn = connectDB();
 
 // QUERY SUPER LENGKAP (Gabung 5 Tabel)
-$sql = "SELECT u.username, u.is_active, u.created_at,
+$sql = "SELECT u.username, u.is_active,
                k.*, -- Ambil semua data profil karyawan
                o.nama_outlet,
                r.nama_role
         FROM users u
-        JOIN user_roles ur ON u.id_user = ur.id_user
-        JOIN roles r ON ur.id_role = r.id_role
+        JOIN roles r ON u.id_role = r.id_role
         -- Gunakan INNER JOIN ke karyawan agar data profil wajib ada
         JOIN karyawan k ON u.id_user = k.id_user 
         LEFT JOIN outlets o ON k.id_outlet = o.id_outlet
@@ -67,10 +66,7 @@ if (!$data) {
                             <label class="small font-weight-bold text-secondary">Username Login</label>
                             <div class="h6"><?php echo $data['username']; ?></div>
                         </div>
-                        <div class="form-group mb-0">
-                            <label class="small font-weight-bold text-secondary">Terdaftar Sejak</label>
-                            <div class="h6"><?php echo date('d F Y', strtotime($data['created_at'])); ?></div>
-                        </div>
+                        
                     </div>
                 </div>
                 <div class="card-footer text-center">

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../../includes/config.php';
+require_once '../../includes/fonnte.php'; // Integrasi Fonnte
 
 // Pastikan hanya admin/owner/kasir yang bisa akses
 checkAuth([1, 4]);
@@ -17,14 +18,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id_transaksi = isset($_POST['id_transaksi']) ? (int)$_POST['id_transaksi'] : 0;
 
     try {
-        // =========================================================
-        // JALUR 1: TRANSAKSI BARU (DARI POS KASIR) -> PAKE AJAX/JSON
-        // =========================================================
+        
         if ($aksi == 'transaksi_baru') {
             $conn->begin_transaction();
 
             $id_outlet = $_POST['outlet_id'];
             $id_pelanggan = (int)$_POST['id_pelanggan_lama'];
+            
+            // JIKA PELANGGAN BARU, SIMPAN KE DATABASE
+            $nama_pelanggan = trim($_POST['nama_pelanggan'] ?? '');
+            $no_hp_pelanggan = trim($_POST['no_hp_pelanggan'] ?? '');
+            
+            if ($id_pelanggan === 0 && !empty($nama_pelanggan)) {
+                // Cek apakah nomor HP sudah ada
+                if (!empty($no_hp_pelanggan)) {
+                    $cek = $conn->prepare("SELECT id_pelanggan FROM pelanggan WHERE no_hp = ?");
+                    $cek->bind_param("s", $no_hp_pelanggan);
+                    $cek->execute();
+                    $res_cek = $cek->get_result();
+                    if ($row_cek = $res_cek->fetch_assoc()) {
+                        $id_pelanggan = $row_cek['id_pelanggan'];
+                    }
+                }
+                
+                // Jika masih 0, insert baru
+                if ($id_pelanggan === 0) {
+                    $stmtPel = $conn->prepare("INSERT INTO pelanggan (nama_pelanggan, no_hp) VALUES (?, ?)");
+                    $stmtPel->bind_param("ss", $nama_pelanggan, $no_hp_pelanggan);
+                    $stmtPel->execute();
+                    $id_pelanggan = $conn->insert_id;
+                }
+            }
+
             $total_harga = (float)$_POST['total_harga'];
             $bayar = (float)$_POST['jumlah_bayar'];
             $kembalian = (float)$_POST['kembalian'];
@@ -58,6 +83,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
 
             $conn->commit();
+
+            // KIRIM NOTIFIKASI WHATSAPP FONNTE JIKA ADA NO HP
+            if (!empty($no_hp_pelanggan)) {
+                $pesan_wa = "Halo *$nama_pelanggan*,\n\nTerima kasih telah menggunakan jasa *Mending Laundry*!\n\nNota: *$no_invoice*\nTotal: *Rp " . number_format($total_harga, 0, ',', '.') . "*\nStatus Pembayaran: *$status_pembayaran*\n\nCucian Anda sedang kami proses. Kami akan memberitahu Anda jika sudah selesai.\n\nTerima kasih!";
+                sendWhatsAppFonnte($no_hp_pelanggan, $pesan_wa);
+            }
+
             $conn->close();
 
             // Balas dengan JSON
@@ -65,9 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo json_encode(['status' => 'success', 'pesan' => 'Transaksi Berhasil Disimpan!', 'id_transaksi' => $id_transaksi_baru]);
             exit;
 
-            // =========================================================
-            // JALUR 2: LUNASI & AMBIL BUKAN AJAX -> PAKE REDIRECT
-            // =========================================================
+           
         } elseif ($aksi == 'lunasi') {
             $bayar_susulan = (float)$_POST['bayar_susulan'];
             $stmt = $conn->prepare("UPDATE transaksi SET bayar = bayar + ?, status_pembayaran = 'Lunas' WHERE id_transaksi = ?");
@@ -90,6 +120,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if ($stmt->execute()) {
                 $_SESSION['pos_status'] = 'success';
                 $_SESSION['pos_id_transaksi'] = $id_transaksi;
+                
+                // Ambil No HP untuk WA
+                $cek_hp = $conn->query("SELECT p.no_hp, p.nama_pelanggan, t.no_invoice FROM transaksi t JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan WHERE t.id_transaksi = $id_transaksi");
+                if ($cek_hp && $row_hp = $cek_hp->fetch_assoc()) {
+                    if (!empty($row_hp['no_hp'])) {
+                        $pesan_wa = "Halo *" . $row_hp['nama_pelanggan'] . "*,\n\nCucian Anda dengan nota *" . $row_hp['no_invoice'] . "* telah *Selesai* dan *Sudah Diambil*.\n\nTerima kasih atas kepercayaannya pada *Mending Laundry*! Ditunggu kedatangannya kembali.";
+                        sendWhatsAppFonnte($row_hp['no_hp'], $pesan_wa);
+                    }
+                }
+
             } else {
                 throw new Exception("Gagal update status pengambilan.");
             }

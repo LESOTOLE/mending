@@ -7,11 +7,10 @@ $id_gaji = $_GET['id'] ?? 0;
 $conn = connectDB();
 
 // Mengambil data gaji dan informasi karyawan
-$sql = "SELECT p.*, k.nama_lengkap, u.username, ur.id_role, o.nama_outlet
+$sql = "SELECT p.*, k.nama_lengkap, u.username, u.id_role, o.nama_outlet
         FROM penggajian p 
         JOIN users u ON p.id_user = u.id_user 
         JOIN karyawan k ON u.id_user = k.id_user
-        JOIN user_roles ur ON u.id_user = ur.id_user
         JOIN outlets o ON k.id_outlet = o.id_outlet
         WHERE p.id_penggajian = ?";
 

@@ -21,12 +21,11 @@ if ($my_role_id == 1) {
     $sql = "SELECT u.id_user, u.username, u.is_active, r.nama_role, 
             k.nama_lengkap, o.nama_outlet 
             FROM users u
-            JOIN user_roles ur ON u.id_user = ur.id_user
-            JOIN roles r ON ur.id_role = r.id_role
+            JOIN roles r ON u.id_role = r.id_role
             LEFT JOIN karyawan k ON u.id_user = k.id_user
             LEFT JOIN outlets o ON k.id_outlet = o.id_outlet
-            WHERE u.id_user != ? AND ur.id_role IN (2, 3, 4)
-            ORDER BY ur.id_role ASC, k.nama_lengkap ASC";
+            WHERE u.id_user != ? AND u.id_role IN (2, 3, 4)
+            ORDER BY u.id_role ASC, k.nama_lengkap ASC";
 
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $my_user_id);
@@ -37,11 +36,10 @@ if ($my_role_id == 1) {
     $sql = "SELECT u.id_user, u.username, u.is_active, r.nama_role, 
             k.nama_lengkap, o.nama_outlet 
             FROM users u
-            JOIN user_roles ur ON u.id_user = ur.id_user
-            JOIN roles r ON ur.id_role = r.id_role
+            JOIN roles r ON u.id_role = r.id_role
             LEFT JOIN karyawan k ON u.id_user = k.id_user
             LEFT JOIN outlets o ON k.id_outlet = o.id_outlet
-            WHERE ur.id_role = 3
+            WHERE u.id_role = 3
             ORDER BY k.nama_lengkap ASC";
 
     $stmt = $conn->prepare($sql);

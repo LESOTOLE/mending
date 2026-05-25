@@ -30,12 +30,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan_gaji'])) {
     $cek = $conn->query("SELECT id_penggajian FROM penggajian WHERE id_user = '$id_user' AND bulan = '$bulan_filter'");
 
     if ($cek->num_rows > 0) {
-        // UPDATE: Sesuaikan nama kolom dengan image_5b9f41.png (total_gaji)
+        // UPDATE: Sesuaikan nama kolom
         $stmt = $conn->prepare("UPDATE penggajian SET gaji_pokok=?, bonus=?, potongan=?, total_gaji=?, catatan=? WHERE id_user=? AND bulan=?");
         // Tipe: d=double/decimal, i=integer, s=string
         $stmt->bind_param("ddddsis", $gapok, $bonus, $potongan, $total, $catatan, $id_user, $bulan_filter);
     } else {
-        // INSERT: Sesuaikan nama kolom dengan image_5b9f41.png
+        // INSERT: Sesuaikan nama kolom
         $stmt = $conn->prepare("INSERT INTO penggajian (id_user, bulan, gaji_pokok, bonus, potongan, total_gaji, catatan) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("isdddds", $id_user, $bulan_filter, $gapok, $bonus, $potongan, $total, $catatan);
     }
@@ -46,12 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan_gaji'])) {
         echo "<script>Swal.fire('Error', 'Gagal menyimpan data: " . $stmt->error . "', 'error');</script>";
     }
 }
+
 // --- QUERY DATA KARYAWAN (UPDATE SCHEMA BARU) ---
-// Menggunakan id_user, join ke karyawan, join ke penggajian
+// PERBAIKAN: Menghapus JOIN user_roles dan langsung memanggil u.id_role dari tabel users
 $sql = "SELECT 
             u.id_user, 
             k.nama_lengkap, 
-            ur.id_role,
+            u.id_role,
             (SELECT COUNT(*) FROM absensi a WHERE a.id_user = u.id_user AND MONTH(a.tanggal) = '$bulan' AND YEAR(a.tanggal) = '$tahun') as total_hadir,
             
             -- PERHATIKAN BARIS DI BAWAH INI (Sekarang memanggil variabel $BATAS_JAM_MASUK) --
@@ -60,10 +61,9 @@ $sql = "SELECT
             p.gaji_pokok, p.bonus, p.potongan, p.total_gaji, p.catatan, 
             p.id_penggajian as id_gaji
         FROM users u 
-        JOIN user_roles ur ON u.id_user = ur.id_user
         JOIN karyawan k ON u.id_user = k.id_user 
         LEFT JOIN penggajian p ON u.id_user = p.id_user AND p.bulan = '$bulan_filter'
-        WHERE ur.id_role = 3 AND u.is_active = 1
+        WHERE u.id_role = 3 AND u.is_active = 1
         ORDER BY k.nama_lengkap ASC";
 
 $result = $conn->query($sql);
