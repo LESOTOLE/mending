@@ -6,17 +6,17 @@ checkAuth([1, 2]);
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
     $conn = connectDB();
     $action = $_POST['action'];
-    $user_id = (int)$_POST['user_id'] ?? 0;
+    $id_user = (int)$_POST['id_user'] ?? 0;
     $tanggal = date('Y-m-d');
-    $waktu = date('H:i:s');
+    $waktu = date('Y-m-d H:i:s');
     $success_msg = "Absensi berhasil dicatat.";
     
     try {
         if ($action == 'masuk') {
             // Cek apakah sudah absensi masuk hari ini
-            $sql_check = "SELECT id FROM absensi WHERE user_id = ? AND tanggal = ?";
+            $sql_check = "SELECT id_absensi FROM absensi WHERE id_user = ? AND tanggal = ?";
             $stmt_check = $conn->prepare($sql_check);
-            $stmt_check->bind_param("is", $user_id, $tanggal);
+            $stmt_check->bind_param("is", $id_user, $tanggal);
             $stmt_check->execute();
             if ($stmt_check->get_result()->num_rows > 0) {
                 throw new Exception("Karyawan sudah absensi masuk hari ini.");
@@ -24,16 +24,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
             $stmt_check->close();
 
             // INSERT Absensi Masuk
-            $sql = "INSERT INTO absensi (user_id, tanggal, waktu_masuk) VALUES (?, ?, ?)";
+            $sql = "INSERT INTO absensi (id_user, tanggal, waktu_masuk) VALUES (?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("iss", $user_id, $tanggal, $waktu);
+            $stmt->bind_param("iss", $id_user, $tanggal, $waktu);
             
         } elseif ($action == 'pulang') {
             // UPDATE Absensi Pulang
             // Pastikan dia sudah masuk hari ini
-            $sql = "UPDATE absensi SET waktu_pulang = ? WHERE user_id = ? AND tanggal = ? AND waktu_pulang IS NULL";
+            $sql = "UPDATE absensi SET waktu_pulang = ? WHERE id_user = ? AND tanggal = ? AND waktu_pulang IS NULL";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sis", $waktu, $user_id, $tanggal);
+            $stmt->bind_param("sis", $waktu, $id_user, $tanggal);
             $success_msg = "Absensi pulang berhasil dicatat.";
             
         } else {

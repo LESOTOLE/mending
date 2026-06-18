@@ -1,5 +1,9 @@
 <?php
 require_once '../../includes/config.php';
+
+// Set judul halaman agar tidak tertulis 'Dashboard' di navbar atas
+$page_title = "Sistem Penggajian (Payroll)";
+
 require_once '../../includes/header.php';
 
 checkAuth([1, 2]); // Owner & HRD
@@ -7,11 +11,11 @@ $conn = connectDB();
 
 // =========================================================
 // [CONFIG] TARIF GAJI (Bisa Diubah Sesuai Kebijakan)
-// =========================================================
+
 $RATE_BONUS_HARIAN  = 15000;     // Uang makan per hari hadir
 $RATE_DENDA_TELAT   = 10000;     // Potongan per telat
 $BATAS_JAM_MASUK    = '08:15:00'; // Karyawan telat jika absen lewat jam ini
-// =========================================================
+
 
 $bulan_filter = $_GET['bulan'] ?? date('Y-m');
 $tahun = date('Y', strtotime($bulan_filter));
@@ -47,8 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan_gaji'])) {
     }
 }
 
-// --- QUERY DATA KARYAWAN (UPDATE SCHEMA BARU) ---
-// PERBAIKAN: Menghapus JOIN user_roles dan langsung memanggil u.id_role dari tabel users
 $sql = "SELECT 
             u.id_user, 
             k.nama_lengkap, 
@@ -69,26 +71,20 @@ $sql = "SELECT
 $result = $conn->query($sql);
 ?>
 <style>
-    /* Paksa warna badge agar sangat kontras */
     .badge-sudah {
         background-color: #28a745 !important;
-        /* Hijau Terang */
         color: #ffffff !important;
-        /* Putih Mutlak */
         font-weight: 800 !important;
         padding: 8px 15px !important;
         border-radius: 5px !important;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
         display: inline-block !important;
         opacity: 1 !important;
-        /* Hilangkan transparansi */
     }
 
     .badge-belum {
         background-color: #dc3545 !important;
-        /* Merah Terang */
         color: #ffffff !important;
-        /* Putih Mutlak */
         font-weight: 800 !important;
         padding: 8px 15px !important;
         border-radius: 5px !important;

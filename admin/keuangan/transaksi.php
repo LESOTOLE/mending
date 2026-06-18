@@ -157,8 +157,14 @@ include '../../includes/header_pos.php';
 
         <div class="col-lg-7 col-md-7 p-4 menu-area bg-light">
             <div class="d-flex justify-content-between align-items-center mb-4 sticky-top bg-light py-3" style="top:-25px; z-index:5; border-bottom: 1px solid #e3e6f0;">
-                <h4 class="fw-bold m-0 text-primary"><i class="fas fa-store-alt me-2"></i> <?php echo htmlspecialchars($outlet_name); ?></h4>
+                <div class="d-flex align-items-center">
+                    <h4 class="fw-bold m-0 text-primary"><i class="fas fa-store-alt me-2"></i> <?php echo htmlspecialchars($outlet_name); ?></h4>
+                    <span class="badge bg-secondary ms-3 px-3 py-2" id="liveClock" style="font-size: 0.9em; letter-spacing: 1px;">00:00:00</span>
+                </div>
                 <div class="d-flex gap-2">
+                    <button class="btn btn-success fw-bold shadow-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalRekapKasir">
+                        <i class="fas fa-cash-register me-1"></i> Rekap Kasir
+                    </button>
                     <button class="btn btn-warning fw-bold shadow-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalCariOrder">
                         <i class="fas fa-search me-1"></i> Ambil / Cari Nota
                     </button>
@@ -312,6 +318,27 @@ include '../../includes/header_pos.php';
     </div>
 </div>
 
+<!-- Modal Rekap Kasir (Shift) -->
+<div class="modal fade" id="modalRekapKasir" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice-dollar me-2"></i> Laporan Tutup Kasir</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body bg-white" id="hasilRekapKasir">
+                <div class="text-center my-5">
+                    <i class="fas fa-spinner fa-spin fa-3x text-success mb-3"></i>
+                    <p class="text-muted">Menghitung uang kasir...</p>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php include '../../includes/footer.php'; ?>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -373,9 +400,11 @@ include '../../includes/header_pos.php';
 
         btn.disabled = false;
         let total = 0;
+        let totalQty = 0;
         keranjang.forEach((item, i) => {
             let sub = item.qty * item.harga;
             total += sub;
+            totalQty += parseFloat(item.qty);
             container.innerHTML += `
             <div class="card mb-2 border-0 shadow-sm p-2 rounded">
                 <div class="d-flex justify-content-between align-items-center">
@@ -384,7 +413,10 @@ include '../../includes/header_pos.php';
                         <small class="text-primary fw-bold">${formatRupiah(item.harga)}</small>
                     </div>
                     <div class="d-flex align-items-center gap-1">
-                    <input type="number" step="0.01" class="qty-input-box py-1" value="${item.qty}" onchange="window.updateQtyManual(${i}, this.value)" onclick="this.select()">                        <small class="fw-bold text-muted">${item.satuan}</small>
+                        <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="window.updateQtyManual(${i}, ${item.qty - 1})"><i class="fas fa-minus" style="font-size: 10px;"></i></button>
+                        <input type="number" step="0.01" class="qty-input-box py-1" value="${item.qty}" onchange="window.updateQtyManual(${i}, this.value)" onclick="this.select()" style="width: 50px;">
+                        <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="window.updateQtyManual(${i}, ${item.qty + 1})"><i class="fas fa-plus" style="font-size: 10px;"></i></button>
+                        <small class="fw-bold text-muted ms-1">${item.satuan}</small>
                     </div>
                     <div class="text-end" style="width: 25%">
                         <div class="fw-bold text-dark small">${formatRupiah(sub)}</div>
@@ -396,10 +428,21 @@ include '../../includes/header_pos.php';
 
         document.getElementById('grandTotalDisplay').innerText = formatRupiah(total);
         document.getElementById('totalHargaInput').value = total;
-        document.getElementById('cartCountBadge').innerText = keranjang.length + ' Item';
+        document.getElementById('cartCountBadge').innerText = totalQty + ' Pcs/Kg';
         document.getElementById('itemsDataInput').value = JSON.stringify(keranjang);
         hitungKembalian();
     }
+
+    // --- FUNGSI JAM DIGITAL LIVE ---
+    function updateClock() {
+        const now = new Date();
+        const clockEl = document.getElementById('liveClock');
+        if (clockEl) {
+            clockEl.innerText = now.toLocaleTimeString('id-ID', { hour12: false });
+        }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
     function hitungKembalian() {
         let t = parseFloat(document.getElementById('totalHargaInput').value) || 0;
@@ -542,6 +585,20 @@ include '../../includes/header_pos.php';
         // Fitur Pencarian Real-time Modal
         $('#inputCariOrder').on('keyup', function() {
             window.loadDataNota($(this).val());
+        });
+
+        // ==========================================
+        // FITUR REKAP KASIR (TUTUP SHIFT)
+        // ==========================================
+        $('#modalRekapKasir').on('shown.bs.modal', function() {
+            $('#hasilRekapKasir').html('<div class="text-center my-5"><i class="fas fa-spinner fa-spin fa-3x text-success mb-3"></i><p class="text-muted">Menghitung uang kasir...</p></div>');
+            $.post('rekap_kasir_ajax.php', {
+                outlet_id: "<?php echo $user_outlet_id; ?>"
+            }, function(data) {
+                $('#hasilRekapKasir').html(data);
+            }).fail(function() {
+                $('#hasilRekapKasir').html('<div class="alert alert-danger">Gagal memuat rekap. Periksa koneksi internet.</div>');
+            });
         });
     });
 
