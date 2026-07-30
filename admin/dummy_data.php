@@ -1,5 +1,8 @@
 <?php
 require_once '../includes/config.php';
+if (php_sapi_name() !== 'cli') {
+    checkAuth([1]);
+}
 $conn = connectDB();
 
 echo "<h2>Mulai membuat data dummy dengan Lokasi Rak...</h2>";

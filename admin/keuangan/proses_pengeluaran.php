@@ -1,11 +1,18 @@
 <?php
-session_start();
 require_once '../../includes/config.php';
 
 // Pastikan hanya Owner (1) yang bisa akses
 checkAuth([1]);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Verifikasi CSRF Token
+    if (!verifyCsrfToken()) {
+        $_SESSION['form_status'] = 'error';
+        $_SESSION['form_message'] = 'Sesi tidak valid (CSRF). Silakan refresh halaman.';
+        header("Location: pengeluaran.php");
+        exit;
+    }
+
     $conn = connectDB();
     $action = $_POST['action'] ?? '';
 
@@ -14,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id_outlet  = $_POST['id_outlet'] ?? $_POST['outlet_id'] ?? 0;
     $id_kat     = $_POST['id_kategori'] ?? $_POST['kategori_id'] ?? 0;
     $keterangan = trim($_POST['deskripsi'] ?? $_POST['keterangan'] ?? '');
-    $nominal    = $_POST['jumlah'] ?? $_POST['nominal'] ?? 0;
+    $nominal    = (float)($_POST['jumlah'] ?? $_POST['nominal'] ?? 0);
     $id_user    = $_SESSION['id_user']; 
 
     try {
@@ -51,7 +58,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($stmt->execute()) {
             $_SESSION['form_status'] = 'success';
-            $_SESSION['form_message'] = 'Data pengeluaran berhasil diproses!';
+            if ($action == 'tambah_pengeluaran') {
+                $_SESSION['form_message'] = 'Catatan pengeluaran berhasil ditambahkan!';
+            } elseif ($action == 'edit') {
+                $_SESSION['form_message'] = 'Data pengeluaran berhasil diperbarui!';
+            } elseif ($action == 'hapus') {
+                $_SESSION['form_message'] = 'Data pengeluaran berhasil dihapus permanen!';
+            } else {
+                $_SESSION['form_message'] = 'Data pengeluaran berhasil diproses!';
+            }
         } else {
             throw new Exception($stmt->error);
         }

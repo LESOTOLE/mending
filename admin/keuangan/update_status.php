@@ -6,9 +6,16 @@ checkAuth([1, 4]);
 $conn = connectDB();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $id_transaksi = $_POST['id'];
-    $aksi = $_POST['aksi'];
+    // PERBAIKAN: Sanitasi input
+    $id_transaksi = (int)($_POST['id'] ?? 0);
+    $aksi = $_POST['aksi'] ?? '';
     $waktu_sekarang = date('Y-m-d H:i:s');
+
+    // Validasi aksi
+    if (!in_array($aksi, ['lunasi', 'ambil']) || $id_transaksi <= 0) {
+        header("Location: transaksi.php?status=error&msg=" . urlencode("Parameter tidak valid."));
+        exit;
+    }
 
     try {
         if ($aksi == 'lunasi') {

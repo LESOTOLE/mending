@@ -1,11 +1,14 @@
 <?php
-session_start();
 require_once '../../includes/config.php';
 checkAuth([1, 2]); // Hanya Owner & HRD
 
 $conn = connectDB();
 $id = $_GET['id'] ?? 0;
 $my_role_id = $_SESSION['id_role'];
+
+// LOGIKA REDIRECT DINAMIS
+$ref = $_GET['ref'] ?? $_POST['ref'] ?? 'manajemen_user';
+$redirect_url = ($ref === 'kelola_karyawan') ? '../kelola_karyawan.php' : 'manajemen_user.php';
 
 // 1. AMBIL DATA USER & KARYAWAN LENGKAP
 $sql = "SELECT u.*, k.*, k.id_outlet as outlet_id
@@ -20,7 +23,7 @@ $user = $stmt->get_result()->fetch_assoc();
 if (!$user) {
     $_SESSION['form_status'] = 'error';
     $_SESSION['form_message'] = 'User tidak ditemukan.';
-    header("Location: manajemen_user.php");
+    header("Location: $redirect_url");
     exit;
 }
 
@@ -28,7 +31,7 @@ if (!$user) {
 if ($my_role_id == 2 && in_array($user['id_role'], [1, 2])) {
     $_SESSION['form_status'] = 'error';
     $_SESSION['form_message'] = 'Anda tidak memiliki akses mengedit akun ini.';
-    header("Location: manajemen_user.php");
+    header("Location: $redirect_url");
     exit;
 }
 
@@ -86,8 +89,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt_u->bind_param($types_u, ...$params_u);
         if (!$stmt_u->execute()) throw new Exception("Gagal update user login.");
 
-        // B. UPDATE TABEL KARYAWAN
-        $cek_k = $conn->query("SELECT id_karyawan FROM karyawan WHERE id_user = $id");
+        // B. UPDATE TABEL KARYAWAN (PERBAIKAN: Prepared Statement)
+        $stmt_cek_k = $conn->prepare("SELECT id_karyawan FROM karyawan WHERE id_user = ?");
+        $stmt_cek_k->bind_param("i", $id);
+        $stmt_cek_k->execute();
+        $cek_k = $stmt_cek_k->get_result();
+        $stmt_cek_k->close();
 
         if ($cek_k->num_rows > 0) {
             $stmt_k = $conn->prepare("UPDATE karyawan SET nama_lengkap=?, id_outlet=?, no_hp=?, jenis_kelamin=?, alamat=?, nik_ktp=?, nama_bank=?, no_rekening=? WHERE id_user=?");
@@ -102,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $conn->commit();
         $_SESSION['form_status'] = 'success';
         $_SESSION['form_message'] = 'Data akun berhasil diperbarui.';
-        header("Location: manajemen_user.php");
+        header("Location: $redirect_url");
         exit;
     } catch (Exception $e) {
         $conn->rollback();
@@ -123,7 +130,7 @@ include '../../includes/header.php';
     <div class="row justify-content-center">
         <div class="col-lg-10">
 
-            <a href="manajemen_user.php" class="btn btn-secondary mb-3 btn-sm shadow-sm">
+            <a href="<?php echo htmlspecialchars($redirect_url); ?>" class="btn btn-secondary mb-3 btn-sm shadow-sm">
                 <i class="fas fa-arrow-left me-1"></i> Kembali
             </a>
 
@@ -134,6 +141,8 @@ include '../../includes/header.php';
             <?php endif; ?>
 
             <form action="" method="POST">
+                <?php echo csrfField(); ?>
+                <input type="hidden" name="ref" value="<?php echo htmlspecialchars($ref); ?>">
                 <div class="row">
                     <div class="col-lg-4">
                         <div class="card shadow mb-4 border-0">

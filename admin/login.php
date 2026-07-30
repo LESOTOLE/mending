@@ -1,6 +1,5 @@
 <?php
-session_start(); // Pastikan session dimulai paling atas
-require_once '../includes/config.php'; // Sesuaikan path ini jika perlu
+require_once '../includes/config.php'; // session_start() sudah di-handle di sini
 
 $error = '';
 
@@ -40,6 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (password_verify($password, $user['password'])) {
 
                 // 4. SET SESSION
+                session_regenerate_id(true); // PERBAIKAN: Cegah session fixation
                 $_SESSION['is_login']     = true;
                 $_SESSION['id_user']      = $user['id_user'];
                 $_SESSION['username']     = $user['username'];
@@ -48,6 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Data ini sekarang akan terisi karena kita sudah JOIN tabel karyawan
                 $_SESSION['nama_lengkap'] = $user['nama_lengkap'] ?? $user['username'];
                 $_SESSION['id_outlet']    = $user['id_outlet'] ?? 0;
+                $_SESSION['outlet_name']  = null;
 
                 // Set Nama Role langsung dari tabel roles (lebih dinamis)
                 $_SESSION['role_name']    = $user['nama_role'];
@@ -83,8 +84,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Mending Laundry</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/mending/assets/vendor/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/mending/assets/vendor/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/web3.css">
     <style>
@@ -151,7 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <?php if (!empty($error)): ?>
                 <div class="alert alert-danger py-2 text-center small rounded-3 border bg-danger text-white mb-4">
-                    <i class="fas fa-exclamation-triangle me-1"></i> <?php echo $error; ?>
+                    <i class="fas fa-exclamation-triangle me-1"></i> <?php echo htmlspecialchars($error); ?>
                 </div>
             <?php endif; ?>
 

@@ -101,8 +101,8 @@ include '../includes/header.php';
                     
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
-                            const status = '<?php echo $status; ?>';
-                            const message = '<?php echo htmlspecialchars($message); ?>';
+                            const status = '<?php echo safeJsString($status); ?>';
+                            const message = '<?php echo safeJsString($message); ?>';
                             if (status && message) {
                                 Swal.fire({
                                     icon: status,
@@ -116,6 +116,7 @@ include '../includes/header.php';
                     </script>
 
                     <form method="POST" action="ganti_password.php" id="formGantiPassword">
+                        <?php echo csrfField(); ?>
                         
                         <div class="form-group mb-4">
                             <label for="password_lama" class="font-weight-bold text-dark small">Password Saat Ini <span class="text-danger">*</span></label>

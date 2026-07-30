@@ -84,9 +84,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             if (!preg_match('/^[0-9]{6}$/', $pin)) throw new Exception("PIN Transaksi harus 6 angka.");
         }
-        // Cek Username Kembar
-        $cek = $conn->query("SELECT id_user FROM users WHERE username = '$username'");
-        if ($cek->num_rows > 0) throw new Exception("Username '$username' sudah digunakan. Pilih yang lain.");
+        // Cek Username Kembar (PERBAIKAN: Prepared Statement)
+        $cek = $conn->prepare("SELECT id_user FROM users WHERE username = ?");
+        $cek->bind_param("s", $username);
+        $cek->execute();
+        if ($cek->get_result()->num_rows > 0) throw new Exception("Username '$username' sudah digunakan. Pilih yang lain.");
+        $cek->close();
 
         // --- MULAI TRANSAKSI DATABASE ---
         $conn->begin_transaction();
@@ -108,10 +111,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // --- SUKSES ---
         $conn->commit();
-        echo "<script>
-                alert('Berhasil! Akun baru telah dibuat.'); 
-                window.location='../kelola_karyawan.php';
-              </script>";
+        $_SESSION['form_status'] = 'success';
+        $_SESSION['form_message'] = 'Akun baru berhasil dibuat.';
+        $redirect_url = ($my_role_id == 2) ? '../kelola_karyawan.php' : 'manajemen_user.php';
+        header("Location: $redirect_url");
         exit;
     } catch (Exception $e) {
         $conn->rollback(); // Batalkan semua jika error
@@ -140,6 +143,7 @@ include '../../includes/header.php';
     <?php endif; ?>
 
     <form method="POST">
+        <?php echo csrfField(); ?>
         <div class="row">
             <div class="col-lg-5">
                 <div class="card shadow mb-4">

@@ -24,6 +24,13 @@ try {
 
 // Logika POST untuk menyimpan data
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (!verifyCsrfToken()) {
+        $_SESSION['form_status'] = 'error';
+        $_SESSION['form_message'] = "Sesi telah kedaluwarsa atau request tidak valid. Silakan coba lagi.";
+        header("Location: tambah_karyawan.php");
+        exit;
+    }
+
     $nama_lengkap = $_POST['nama_lengkap'] ?? '';
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
@@ -41,21 +48,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Mulai Transaksi
             $conn->begin_transaction();
 
-            // 1. INSERT ke tabel users
-            $sql_user = "INSERT INTO users (username, password, nama_lengkap, outlet_id, is_active, id_role) 
-                         VALUES (?, ?, ?, ?, 1, ?)";
+            // 1. INSERT ke tabel users (PERBAIKAN: Hanya kolom yang ada di tabel users)
+            $sql_user = "INSERT INTO users (username, password, is_active, id_role) 
+                         VALUES (?, ?, 1, ?)";
             $stmt_user = $conn->prepare($sql_user);
-            $stmt_user->bind_param("sssii", $username, $hashed_password, $nama_lengkap, $outlet_id, $role_id_new);
+            $stmt_user->bind_param("ssi", $username, $hashed_password, $role_id_new);
 
             if (!$stmt_user->execute()) {
                 throw new Exception("Gagal menambahkan user: " . $stmt_user->error);
             }
             
+            $new_id_user = $conn->insert_id;
             $stmt_user->close();
+
+            // 2. INSERT ke tabel karyawan (PERBAIKAN: Data profil masuk ke tabel karyawan)
+            $sql_karyawan = "INSERT INTO karyawan (id_user, id_outlet, nama_lengkap) VALUES (?, ?, ?)";
+            $stmt_karyawan = $conn->prepare($sql_karyawan);
+            $stmt_karyawan->bind_param("iis", $new_id_user, $outlet_id, $nama_lengkap);
+
+            if (!$stmt_karyawan->execute()) {
+                throw new Exception("Gagal menyimpan profil karyawan: " . $stmt_karyawan->error);
+            }
+            $stmt_karyawan->close();
 
             $conn->commit();
             $_SESSION['form_status'] = 'success';
-            $_SESSION['form_message'] = "Akun karyawan **{$nama_lengkap}** berhasil ditambahkan.";
+            $_SESSION['form_message'] = "Akun karyawan {$nama_lengkap} berhasil ditambahkan.";
             header("Location: kelola_karyawan.php"); // Redirect ke halaman kelola
             exit;
 
@@ -76,6 +94,7 @@ include '../includes/header.php';
     <div class="card-header bg-success text-white">Formulir Pendaftaran Karyawan</div>
     <div class="card-body">
         <form method="POST" action="tambah_karyawan.php">
+            <?php echo csrfField(); ?>
             
             <div class="mb-3">
                 <label for="nama_lengkap" class="form-label">Nama Lengkap</label>

@@ -5,7 +5,7 @@ require_once '../includes/config.php';
 checkAuth([1]); 
 
 $page_title = "Laporan Kehadiran";
-$role_id = $_SESSION['role_id'];
+$role_id = $_SESSION['id_role'] ?? 0;
 
 $conn = connectDB();
 $bulan_sekarang = date('m');

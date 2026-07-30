@@ -226,7 +226,7 @@ include '../../includes/header.php';
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/mending/assets/vendor/js/sweetalert2.all.min.js"></script>
 <script>
     function prepareModal(action, data = null) {
         const title = document.getElementById('modalTitle');

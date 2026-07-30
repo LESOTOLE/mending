@@ -1,12 +1,12 @@
 <?php
 require_once '../../includes/config.php';
 
-// Set judul halaman agar tidak tertulis 'Dashboard' di navbar atas
+checkAuth([1, 2]); // Owner & HRD
+
 $page_title = "Sistem Penggajian (Payroll)";
 
 require_once '../../includes/header.php';
 
-checkAuth([1, 2]); // Owner & HRD
 $conn = connectDB();
 
 // =========================================================
@@ -18,20 +18,29 @@ $BATAS_JAM_MASUK    = '08:15:00'; // Karyawan telat jika absen lewat jam ini
 
 
 $bulan_filter = $_GET['bulan'] ?? date('Y-m');
-$tahun = date('Y', strtotime($bulan_filter));
-$bulan = date('m', strtotime($bulan_filter));
+if (!preg_match('/^\d{4}-\d{2}$/', $bulan_filter)) {
+    $bulan_filter = date('Y-m');
+}
+$tahun = (int)date('Y', strtotime($bulan_filter));
+$bulan = (int)date('m', strtotime($bulan_filter));
 
 // --- PROSES SIMPAN DATA (POST) ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan_gaji'])) {
-    $id_user  = $_POST['id_user'];
-    $gapok    = $_POST['gaji_pokok'];
-    $bonus    = $_POST['bonus'];
-    $potongan = $_POST['potongan'];
-    $catatan  = $_POST['catatan'];
+    if (!verifyCsrfToken()) {
+        echo "<script>Swal.fire('Error', 'Sesi telah kedaluwarsa atau request tidak valid. Silakan coba lagi.', 'error');</script>";
+    } else {
+    $id_user  = (int)$_POST['id_user'];
+    $gapok    = (float)$_POST['gaji_pokok'];
+    $bonus    = (float)$_POST['bonus'];
+    $potongan = (float)$_POST['potongan'];
+    $catatan  = trim($_POST['catatan']);
     $total    = ($gapok + $bonus) - $potongan;
 
     // Cek apakah data gaji bulan ini sudah ada?
-    $cek = $conn->query("SELECT id_penggajian FROM penggajian WHERE id_user = '$id_user' AND bulan = '$bulan_filter'");
+    $stmt_cek = $conn->prepare("SELECT id_penggajian FROM penggajian WHERE id_user = ? AND bulan = ?");
+    $stmt_cek->bind_param("is", $id_user, $bulan_filter);
+    $stmt_cek->execute();
+    $cek = $stmt_cek->get_result();
 
     if ($cek->num_rows > 0) {
         // UPDATE: Sesuaikan nama kolom
@@ -50,25 +59,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan_gaji'])) {
         echo "<script>Swal.fire('Error', 'Gagal menyimpan data: " . $stmt->error . "', 'error');</script>";
     }
 }
+}
 
 $sql = "SELECT 
             u.id_user, 
             k.nama_lengkap, 
             u.id_role,
-            (SELECT COUNT(*) FROM absensi a WHERE a.id_user = u.id_user AND MONTH(a.tanggal) = '$bulan' AND YEAR(a.tanggal) = '$tahun') as total_hadir,
-            
-            -- PERHATIKAN BARIS DI BAWAH INI (Sekarang memanggil variabel $BATAS_JAM_MASUK) --
-            (SELECT COUNT(*) FROM absensi a WHERE a.id_user = u.id_user AND MONTH(a.tanggal) = '$bulan' AND YEAR(a.tanggal) = '$tahun' AND TIME(a.waktu_masuk) > '$BATAS_JAM_MASUK') as total_telat,
-            
+            COALESCE(a.total_hadir, 0) as total_hadir,
+            COALESCE(a.total_telat, 0) as total_telat,
             p.gaji_pokok, p.bonus, p.potongan, p.total_gaji, p.catatan, 
             p.id_penggajian as id_gaji
         FROM users u 
         JOIN karyawan k ON u.id_user = k.id_user 
-        LEFT JOIN penggajian p ON u.id_user = p.id_user AND p.bulan = '$bulan_filter'
+        LEFT JOIN (
+            SELECT id_user, 
+                   COUNT(*) as total_hadir,
+                   SUM(CASE WHEN TIME(waktu_masuk) > ? THEN 1 ELSE 0 END) as total_telat
+            FROM absensi 
+            WHERE MONTH(tanggal) = ? AND YEAR(tanggal) = ?
+            GROUP BY id_user
+        ) a ON u.id_user = a.id_user
+        LEFT JOIN penggajian p ON u.id_user = p.id_user AND p.bulan = ?
         WHERE u.id_role = 3 AND u.is_active = 1
         ORDER BY k.nama_lengkap ASC";
 
-$result = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("siis", $BATAS_JAM_MASUK, $bulan, $tahun, $bulan_filter);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 <style>
     .badge-sudah {
@@ -149,9 +167,9 @@ $result = $conn->query($sql);
                                 $auto_bonus = $row['total_hadir'] * $RATE_BONUS_HARIAN;
                                 $auto_potongan = $row['total_telat'] * $RATE_DENDA_TELAT;
 
-                                // Jika sudah ada di DB, pakai data DB. Jika belum, pakai Auto.
-                                $display_bonus    = ($row['id_gaji']) ? $row['bonus'] : $auto_bonus;
-                                $display_potongan = ($row['id_gaji']) ? $row['potongan'] : $auto_potongan;
+                                // Jika di DB lebih besar (misal diedit manual), pakai DB. Jika tidak, selalu tawarkan Auto terbaru.
+                                $display_bonus    = ($row['id_gaji'] && $row['bonus'] > $auto_bonus) ? $row['bonus'] : $auto_bonus;
+                                $display_potongan = ($row['id_gaji'] && $row['potongan'] > $auto_potongan) ? $row['potongan'] : $auto_potongan;
                                 $display_gapok    = ($row['id_gaji']) ? $row['gaji_pokok'] : 0;
                                 ?>
 
@@ -185,17 +203,15 @@ $result = $conn->query($sql);
                                         <?php echo $row['total_gaji'] ? 'Rp ' . number_format($row['total_gaji'], 0, ',', '.') : '-'; ?>
                                     </td>
                                     <td class="text-center align-middle">
-                                        <button type="button" class="btn btn-sm btn-primary mb-1 w-100 font-weight-bold"
-                                            onclick="bukaModalGaji(
-                                                '<?php echo $row['id_user']; ?>', 
-                                                '<?php echo $row['nama_lengkap']; ?>', 
-                                                '<?php echo $row['total_hadir']; ?>',
-                                                '<?php echo $row['total_telat']; ?>',
-                                                '<?php echo $display_gapok; ?>',
-                                                '<?php echo $display_bonus; ?>',
-                                                '<?php echo $display_potongan; ?>',
-                                                '<?php echo $row['catatan'] ?? ''; ?>'
-                                            )">
+                                        <button type="button" class="btn btn-sm btn-primary mb-1 w-100 font-weight-bold btn-hitung"
+                                            data-id="<?php echo $row['id_user']; ?>"
+                                            data-nama="<?php echo htmlspecialchars($row['nama_lengkap'], ENT_QUOTES); ?>"
+                                            data-hadir="<?php echo $row['total_hadir']; ?>"
+                                            data-telat="<?php echo $row['total_telat']; ?>"
+                                            data-gapok="<?php echo $display_gapok; ?>"
+                                            data-bonus="<?php echo $display_bonus; ?>"
+                                            data-potongan="<?php echo $display_potongan; ?>"
+                                            data-catatan="<?php echo htmlspecialchars($row['catatan'] ?? '', ENT_QUOTES); ?>">
                                             <i class="fas fa-calculator mr-1"></i> HITUNG
                                         </button>
 
@@ -227,6 +243,7 @@ $result = $conn->query($sql);
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
             <form method="POST">
+                <?php echo csrfField(); ?>
                 <div class="modal-body bg-light">
                     <input type="hidden" name="simpan_gaji" value="1">
                     <input type="hidden" name="id_user" id="modal_user_id">
@@ -283,26 +300,34 @@ $result = $conn->query($sql);
         </div>
     </div>
 </div>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <?php require_once '../../includes/footer.php'; ?>
 
 <script>
-    function bukaModalGaji(id, nama, hadir, telat, gapok, bonus, pot, cat) {
-        $('#modal_user_id').val(id);
-        $('#modal_nama').text(nama);
-        $('#text_hadir').text(hadir);
-        $('#text_telat').text(telat);
+    $(document).ready(function() {
+        $('.btn-hitung').on('click', function() {
+            let id = $(this).data('id');
+            let nama = $(this).data('nama');
+            let hadir = $(this).data('hadir');
+            let telat = $(this).data('telat');
+            let gapok = parseFloat($(this).data('gapok')) || 0;
+            let bonus = parseFloat($(this).data('bonus')) || 0;
+            let pot = parseFloat($(this).data('potongan')) || 0;
+            let cat = $(this).data('catatan');
 
-        $('#modal_gapok').val(gapok);
-        $('#modal_bonus').val(bonus);
-        $('#modal_potongan').val(pot);
-        $('#modal_catatan').val(cat);
+            $('#modal_user_id').val(id);
+            $('#modal_nama').text(nama);
+            $('#text_hadir').text(hadir);
+            $('#text_telat').text(telat);
 
-        hitungTotal();
-        $('#modalGaji').modal('show');
-    }
+            $('#modal_gapok').val(gapok);
+            $('#modal_bonus').val(bonus);
+            $('#modal_potongan').val(pot);
+            $('#modal_catatan').val(cat);
+
+            hitungTotal();
+            $('#modalGaji').modal('show');
+        });
+    });
 
     function hitungTotal() {
         let gapok = parseFloat($('#modal_gapok').val()) || 0;

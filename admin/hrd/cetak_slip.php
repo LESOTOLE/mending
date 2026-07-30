@@ -42,9 +42,9 @@ $qr_data = urlencode("VERIFIED BY MENDING LAUNDRY\nRef: $auth_code\nNama: {$data
     <title>Slip Gaji - <?php echo $data['nama_lengkap']; ?></title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/mending/assets/vendor/css/all.min.css">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="/mending/assets/vendor/js/html2pdf.bundle.min.js"></script>
 
     <style>
         :root {
@@ -316,7 +316,7 @@ $qr_data = urlencode("VERIFIED BY MENDING LAUNDRY\nRef: $auth_code\nNama: {$data
             <?php endif; ?>
 
             <div class="authenticity">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=<?php echo $qr_data; ?>" class="qr-code" alt="QR Validasi">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=<?php echo $qr_data; ?>" class="qr-code" onerror="this.style.display='none'" alt="QR Validasi">
                 <div class="auth-text">
                     <h4><i class="fas fa-check-circle"></i> Dokumen Terverifikasi Digital</h4>
                     <p>Slip gaji ini diterbitkan secara resmi melalui sistem <strong>Mending Laundry</strong> dan sah digunakan sebagai bukti penerimaan gaji tanpa memerlukan cap atau tanda tangan basah HRD.</p>

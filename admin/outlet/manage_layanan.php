@@ -1,10 +1,11 @@
 <?php
 session_start();
 require_once '../../includes/config.php';
+
+checkAuth([1]);
+
 require_once '../../includes/header.php';
 
-// HANYA OWNER YANG BOLEH AKSES
-checkAuth([1]); 
 $conn = connectDB();
 
 // 1. TANGKAP ID CABANG DARI URL
@@ -30,6 +31,9 @@ $nama_cabang = $data_outlet['nama_outlet'];
 
 // --- PROSES CRUD LAYANAN ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (!verifyCsrfToken()) {
+        echo "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire('Error', 'Sesi telah kedaluwarsa atau request tidak valid. Silakan coba lagi.', 'error'); });</script>";
+    } else {
     $aksi = $_POST['aksi'] ?? '';
     
     if ($aksi == 'tambah') {
@@ -60,7 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     elseif ($aksi == 'hapus') {
         $id = (int)$_POST['id_layanan'];
         
-        $cek = $conn->query("SELECT id_detail FROM transaksi_detail WHERE id_layanan = $id LIMIT 1");
+        $stmt_cek = $conn->prepare("SELECT id_detail FROM transaksi_detail WHERE id_layanan = ? LIMIT 1");
+        $stmt_cek->bind_param("i", $id);
+        $stmt_cek->execute();
+        $cek = $stmt_cek->get_result();
         if ($cek->num_rows > 0) {
              echo "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire('Gagal!', 'Layanan ini sudah dipakai di transaksi kasir, tidak bisa dihapus!', 'error'); });</script>";
         } else {
@@ -88,10 +95,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 }
+}
 
 // --- AMBIL DATA LAYANAN KHUSUS UNTUK CABANG INI SAJA ---
-$sql_layanan = "SELECT * FROM layanan WHERE id_outlet = $id_outlet ORDER BY nama_layanan ASC";
-$res_layanan = $conn->query($sql_layanan);
+$stmt_layanan = $conn->prepare("SELECT * FROM layanan WHERE id_outlet = ? ORDER BY nama_layanan ASC");
+$stmt_layanan->bind_param("i", $id_outlet);
+$stmt_layanan->execute();
+$res_layanan = $stmt_layanan->get_result();
 ?>
 
 <div class="container-fluid">
@@ -137,6 +147,7 @@ $res_layanan = $conn->query($sql_layanan);
                             <td>/ <?php echo $row['satuan']; ?></td>
                             <td class="text-center">
                                 <form method="POST" style="margin: 0;">
+                                    <?php echo csrfField(); ?>
                                     <input type="hidden" name="aksi" value="toggle_status">
                                     <input type="hidden" name="id_layanan" value="<?php echo $row['id_layanan']; ?>">
                                     <input type="hidden" name="status_baru" value="<?php echo $row['status'] == 'Aktif' ? 'Tidak Aktif' : 'Aktif'; ?>">
@@ -177,6 +188,7 @@ $res_layanan = $conn->query($sql_layanan);
                 <button type="button" class="close text-white" data-bs-dismiss="modal">&times;</button>
             </div>
             <form method="POST">
+                <?php echo csrfField(); ?>
                 <div class="modal-body bg-light">
                     <input type="hidden" name="aksi" id="aksiLayanan" value="tambah">
                     <input type="hidden" name="id_layanan" id="idLayanan">
@@ -220,15 +232,16 @@ $res_layanan = $conn->query($sql_layanan);
 </div>
 
 <form id="formHapusLayanan" method="POST" style="display:none;">
+    <?php echo csrfField(); ?>
     <input type="hidden" name="aksi" value="hapus">
     <input type="hidden" name="id_layanan" id="idHapusLayanan">
 </form>
 
 <?php require_once '../../includes/footer.php'; ?>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/mending/assets/vendor/js/jquery-3.6.0.min.js"></script>
+<script src="/mending/assets/vendor/js/bootstrap.bundle.min.js"></script>
+<script src="/mending/assets/vendor/js/sweetalert2.all.min.js"></script>
 
 <script>
     function bukaModalTambah() {

@@ -1,6 +1,9 @@
 <?php
 require_once '../../includes/config.php';
 
+// PERBAIKAN: Tambahkan auth check
+checkAuth([1, 4]);
+
 // Pastikan ada request POST dari AJAX
 if (!isset($_POST['keyword']) || !isset($_POST['outlet_id'])) {
     exit;
@@ -50,7 +53,7 @@ if ($result->num_rows == 0) {
 
             <div>
                 <h6 class="mb-1 fw-bold text-primary">
-                    <i class="fas fa-receipt me-1"></i> <?php echo $row['no_invoice']; ?>
+                    <i class="fas fa-receipt me-1"></i> <?php echo htmlspecialchars($row['no_invoice']); ?>
                 </h6>
                 <small class="text-dark fw-bold">
                     <i class="fas fa-user me-1"></i> <?php echo htmlspecialchars($row['nama_pelanggan']); ?>
@@ -67,14 +70,22 @@ if ($result->num_rows == 0) {
                         <?php echo $row['status_pembayaran']; ?>
                     </span>
                     <?php if (!empty($row['lokasi_rak'])): ?>
-                        <span class="badge bg-info text-dark"><i class="fas fa-box"></i> Rak: <?php echo $row['lokasi_rak']; ?></span>
+                        <span class="badge bg-info text-dark"><i class="fas fa-box"></i> Rak: <?php echo htmlspecialchars($row['lokasi_rak']); ?></span>
                     <?php endif; ?>
                 </div>
             </div>
 
             <div class="text-end" style="min-width: 100px;">
-                <!-- TOMBOL LUNASI (Hanya Muncul Jika Belum Lunas) -->
-                <?php if ($row['status_pembayaran'] != 'Lunas'): ?>
+                <!-- KONDISI A: Cucian Belum Selesai -->
+                <?php if (in_array($row['status_laundry'], ['Baru', 'Dicuci', 'Diproses'])): ?>
+                    <button class="btn btn-sm btn-warning mb-1 w-100 fw-bold shadow-sm text-dark"
+                        onclick="window.aksiAturRak(<?php echo $row['id_transaksi']; ?>, '<?php echo addslashes($row['nama_pelanggan']); ?>')">
+                        <i class="fas fa-check-circle"></i> Selesai & Rak
+                    </button>
+                <?php endif; ?>
+
+                <!-- KONDISI B: Cucian Selesai, Belum Lunas -->
+                <?php if ($row['status_laundry'] == 'Selesai' && $row['status_pembayaran'] != 'Lunas'): ?>
                     <?php $sisa_bayar = $row['grand_total'] - $row['bayar']; ?>
                     <button class="btn btn-sm btn-danger mb-1 w-100 fw-bold shadow-sm"
                         onclick="window.aksiLunasi(<?php echo $row['id_transaksi']; ?>, '<?php echo addslashes($row['nama_pelanggan']); ?>', <?php echo $sisa_bayar; ?>)">
@@ -82,8 +93,8 @@ if ($result->num_rows == 0) {
                     </button>
                 <?php endif; ?>
 
-                <!-- TOMBOL AMBIL (Syarat Ketat: Belum Diambil && Sudah Lunas!) -->
-                <?php if ($row['status_laundry'] != 'Diambil' && $row['status_pembayaran'] == 'Lunas'): ?>
+                <!-- KONDISI C: Cucian Selesai, Sudah Lunas -->
+                <?php if ($row['status_laundry'] == 'Selesai' && $row['status_pembayaran'] == 'Lunas'): ?>
                     <button class="btn btn-sm btn-success mb-1 w-100 fw-bold shadow-sm"
                         onclick="window.aksiAmbil(<?php echo $row['id_transaksi']; ?>, '<?php echo addslashes($row['nama_pelanggan']); ?>')">
                         <i class="fas fa-box-open"></i> Ambil

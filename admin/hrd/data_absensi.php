@@ -6,8 +6,10 @@ $conn = connectDB();
 $page_title = "Monitoring Absensi Karyawan";
 include 'auto_cleanup.php';
 // --- LOGIKA FILTER ---
-$tgl_awal  = isset($_GET['tgl_awal']) ? $_GET['tgl_awal'] : date('Y-m-01'); // Default awal bulan
-$tgl_akhir = isset($_GET['tgl_akhir']) ? $_GET['tgl_akhir'] : date('Y-m-d');  // Default hari ini
+$tgl_awal  = isset($_GET['tgl_awal']) ? $_GET['tgl_awal'] : date('Y-m-01');
+$tgl_akhir = isset($_GET['tgl_akhir']) ? $_GET['tgl_akhir'] : date('Y-m-d');
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tgl_awal)) $tgl_awal = date('Y-m-01');
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tgl_akhir)) $tgl_akhir = date('Y-m-d');
 $id_outlet = isset($_GET['outlet_filter']) ? (int)$_GET['outlet_filter'] : 0;
 
 // Ambil Daftar Outlet untuk Dropdown Filter
@@ -18,20 +20,26 @@ while ($row = $res_o->fetch_assoc()) {
 }
 
 // --- QUERY DATA ABSENSI ---
-// Kita join ke karyawan untuk dapat Nama, dan ke Outlet untuk tahu lokasi kerjanya.
 $sql = "SELECT a.*, k.nama_lengkap, o.nama_outlet 
         FROM absensi a
         JOIN users u ON a.id_user = u.id_user
         JOIN karyawan k ON u.id_user = k.id_user
         JOIN outlets o ON k.id_outlet = o.id_outlet
-        WHERE a.tanggal BETWEEN '$tgl_awal' AND '$tgl_akhir'";
+        WHERE a.tanggal BETWEEN ? AND ?";
 
 if ($id_outlet > 0) {
-    $sql .= " AND o.id_outlet = $id_outlet";
+    $sql .= " AND o.id_outlet = ?";
 }
 
 $sql .= " ORDER BY a.tanggal DESC, a.waktu_masuk DESC";
-$result = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+if ($id_outlet > 0) {
+    $stmt->bind_param("ssi", $tgl_awal, $tgl_akhir, $id_outlet);
+} else {
+    $stmt->bind_param("ss", $tgl_awal, $tgl_akhir);
+}
+$stmt->execute();
+$result = $stmt->get_result();
 
 include '../../includes/header.php';
 ?>

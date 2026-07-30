@@ -4,14 +4,14 @@ require_once '../../includes/config.php';
 
 // 1. CEK LOGIN (Keamanan)
 if (!isset($_SESSION['is_login'])) {
-    header("Location: ../../login.php");
+    header("Location: ../../admin/login.php");
     exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn = connectDB();
 
-    $id_user = $_POST['id_user'];
+    $id_user = (int)$_SESSION['id_user'];
     $action  = $_POST['action_type']; // 'masuk' atau 'pulang'
     $today   = date('Y-m-d');
 
@@ -22,8 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // 2. VALIDASI LOGIKA (Mencegah Duplikat)
     // ==========================================================
 
-    // Cek dulu apakah data hari ini sudah ada?
-    $cek = $conn->query("SELECT * FROM absensi WHERE id_user = '$id_user' AND tanggal = '$today'");
+    // PERBAIKAN: Gunakan prepared statement
+    $stmt_cek = $conn->prepare("SELECT * FROM absensi WHERE id_user = ? AND tanggal = ?");
+    $stmt_cek->bind_param("is", $id_user, $today);
+    $stmt_cek->execute();
+    $cek = $stmt_cek->get_result();
     $data_ada = $cek->fetch_assoc();
 
     if ($action == 'masuk') {
@@ -63,9 +66,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
+    // PERBAIKAN: Validasi ukuran file (max 5MB)
+    $max_size = 5 * 1024 * 1024; // 5MB
+    if ($_FILES['foto_absensi']['size'] > $max_size) {
+        $_SESSION['form_status'] = 'error';
+        $_SESSION['form_message'] = 'Ukuran foto maksimal 5MB.';
+        header("Location: absensi.php");
+        exit;
+    }
+
     $target_dir = "../../uploads/absensi/";
     if (!file_exists($target_dir)) {
-        mkdir($target_dir, 0777, true);
+        mkdir($target_dir, 0755, true); // PERBAIKAN: 0755 bukan 0777
     }
 
     $file_ext = strtolower(pathinfo($_FILES["foto_absensi"]["name"], PATHINFO_EXTENSION));
@@ -74,6 +86,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!in_array($file_ext, $allowed)) {
         $_SESSION['form_status'] = 'error';
         $_SESSION['form_message'] = 'Format foto harus JPG atau PNG.';
+        header("Location: absensi.php");
+        exit;
+    }
+
+    // PERBAIKAN: Validasi MIME type sebenarnya
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = finfo_file($finfo, $_FILES['foto_absensi']['tmp_name']);
+    finfo_close($finfo);
+    $allowed_mimes = ['image/jpeg', 'image/png'];
+    if (!in_array($mime_type, $allowed_mimes)) {
+        $_SESSION['form_status'] = 'error';
+        $_SESSION['form_message'] = 'Tipe file tidak valid. Hanya JPG/PNG yang diperbolehkan.';
         header("Location: absensi.php");
         exit;
     }

@@ -8,8 +8,10 @@ $today   = date('Y-m-d');
 $page_title = "Absensi Harian"; // Untuk title di header
 
 // 1. AMBIL STATUS ABSENSI HARI INI
-$sql = "SELECT * FROM absensi WHERE id_user = '$id_user' AND tanggal = '$today'";
-$result = $conn->query($sql);
+$stmt = $conn->prepare("SELECT * FROM absensi WHERE id_user = ? AND tanggal = ?");
+$stmt->bind_param("is", $id_user, $today);
+$stmt->execute();
+$result = $stmt->get_result();
 $data_absen = $result->fetch_assoc();
 
 // 2. TENTUKAN STATUS
@@ -72,7 +74,6 @@ include '../../includes/header.php';
                     <p class="text-muted mb-4">Silakan absen untuk memulai pekerjaan hari ini.</p>
 
                     <form action="proses_upload_absensi.php" method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="id_user" value="<?php echo $id_user; ?>">
                         <input type="hidden" name="action_type" value="masuk">
 
                         <div class="mb-4 text-start">
@@ -102,7 +103,6 @@ include '../../includes/header.php';
                     <p class="text-muted small mb-4">Sudah selesai bekerja? Silakan absen pulang.</p>
 
                     <form action="proses_upload_absensi.php" method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="id_user" value="<?php echo $id_user; ?>">
                         <input type="hidden" name="action_type" value="pulang">
 
                         <div class="mb-4 text-start">

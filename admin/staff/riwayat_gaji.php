@@ -8,17 +8,24 @@ $page_title = "Riwayat Gaji & Slip";
 
 // 1. AMBIL STATISTIK RINGKAS
 // Gaji Terakhir
-$q_last = $conn->query("SELECT total_gaji FROM penggajian WHERE id_user = $id_user ORDER BY bulan DESC, bulan DESC LIMIT 1");
-$gaji_terakhir = $q_last->fetch_assoc()['total_gaji'] ?? 0;
+$stmt_last = $conn->prepare("SELECT total_gaji FROM penggajian WHERE id_user = ? ORDER BY bulan DESC LIMIT 1");
+$stmt_last->bind_param("i", $id_user);
+$stmt_last->execute();
+$gaji_terakhir = $stmt_last->get_result()->fetch_assoc()['total_gaji'] ?? 0;
 
 // Total Gaji Tahun Ini
 $tahun_ini = date('Y');
-$q_total_tahun = $conn->query("SELECT SUM(total_gaji) as total FROM penggajian WHERE id_user = $id_user AND bulan = '$tahun_ini'");
-$total_tahun_ini = $q_total_tahun->fetch_assoc()['total'] ?? 0;
+$stmt_total_tahun = $conn->prepare("SELECT SUM(total_gaji) as total FROM penggajian WHERE id_user = ? AND bulan LIKE ?");
+$tahun_like = "$tahun_ini%";
+$stmt_total_tahun->bind_param("is", $id_user, $tahun_like);
+$stmt_total_tahun->execute();
+$total_tahun_ini = $stmt_total_tahun->get_result()->fetch_assoc()['total'] ?? 0;
 
 // 2. AMBIL SEMUA RIWAYAT GAJI
-$sql = "SELECT * FROM penggajian WHERE id_user = $id_user ORDER BY bulan DESC, bulan DESC";
-$result = $conn->query($sql);
+$stmt = $conn->prepare("SELECT * FROM penggajian WHERE id_user = ? ORDER BY bulan DESC");
+$stmt->bind_param("i", $id_user);
+$stmt->execute();
+$result = $stmt->get_result();
 
 include '../../includes/header.php';
 ?>

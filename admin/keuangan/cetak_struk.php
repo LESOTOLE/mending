@@ -5,14 +5,15 @@ checkAuth([1, 4, 2]); // Hanya Owner & Admin Outlet
 $conn = connectDB();
 $id = (int)($_GET['id'] ?? 0);
 $tipe = $_GET['tipe'] ?? 'deposit';
-// 1. AMBIL DATA HEADER TRANSAKSI + OUTLET + KARYAWAN (PIC)
-// PERBAIKAN: Join ke 'karyawan' untuk nama kasir & hapus join 'pelanggan'
+// 1. AMBIL DATA HEADER TRANSAKSI + OUTLET + KARYAWAN + PELANGGAN
 $sql = "SELECT t.*, 
                o.nama_outlet, o.alamat,
-               k.nama_lengkap as nama_kasir
+               k.nama_lengkap as nama_kasir,
+               p.nama_pelanggan
         FROM transaksi t
         JOIN outlets o ON t.id_outlet = o.id_outlet
         LEFT JOIN karyawan k ON t.id_user = k.id_user
+        LEFT JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
         WHERE t.id_transaksi = ?";
 
 $stmt = $conn->prepare($sql);
@@ -129,8 +130,14 @@ $items = $stmt_d->get_result();
             </tr>
             <tr>
                 <td>Cust</td>
-                <td class="text-right">: <?php echo htmlspecialchars($trx['catatan'] ?? 'Umum'); ?></td>
+                <td class="text-right">: <?php echo htmlspecialchars($trx['nama_pelanggan'] ?? 'Umum'); ?></td>
             </tr>
+            <?php if (!empty($trx['catatan'])): ?>
+            <tr>
+                <td style="vertical-align: top;">Notes</td>
+                <td class="text-right">: <?php echo nl2br(htmlspecialchars($trx['catatan'])); ?></td>
+            </tr>
+            <?php endif; ?>
         </table>
 
         <div class="divider"></div>
@@ -154,6 +161,16 @@ $items = $stmt_d->get_result();
         <div class="divider"></div>
 
         <table>
+            <tr>
+                <td class="bold">TOTAL HARGA</td>
+                <td class="text-right bold">Rp <?php echo number_format($trx['total_harga'], 0, ',', '.'); ?></td>
+            </tr>
+            <?php if ($trx['diskon'] > 0): ?>
+            <tr>
+                <td>Diskon</td>
+                <td class="text-right">-Rp <?php echo number_format($trx['diskon'], 0, ',', '.'); ?></td>
+            </tr>
+            <?php endif; ?>
             <tr>
                 <td class="bold">GRAND TOTAL</td>
                 <td class="text-right bold">

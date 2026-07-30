@@ -1,0 +1,25 @@
+# Sensitive credentials
+includes/credentials.php
+env.php
+
+# Test/Dummy data scripts
+insert_dummy.php
+insert_dummy_future.php
+admin/dummy_data.php
+admin/teskoneksi.php
+cek_schema.php
+replace_cdn.php
+download_assets.php
+run_e2e_test.php
+test_all_modules.php
+test_browser.js
+test_comprehensive.php
+test_wa.php
+verify_e2e.php
+
+# Logs and Modules
+*.log
+node_modules/
+.mcp.json
+package-lock.json
+package.json

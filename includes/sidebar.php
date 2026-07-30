@@ -191,7 +191,7 @@ $role_name = $_SESSION['role_name'] ?? 'User';
 
     <div class="dropdown flex-shrink-0">
         <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle p-2 rounded hover-bg" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(255, 255, 255, 1);">
-            <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['nama_lengkap'] ?? 'U'); ?>&background=random&color=fff" alt="" width="32" height="32" class="rounded-circle me-2 border border-2 border-white">
+            <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['nama_lengkap'] ?? 'U'); ?>&background=random&color=fff" onerror="this.onerror=null;this.src='/mending/assets/vendor/img/default-avatar.png';" alt="" width="32" height="32" class="rounded-circle me-2 border border-2 border-white">
             <div class="text-truncate" style="max-width: 100px;">
                 <strong class="small"><?php echo explode(' ', $_SESSION['nama_lengkap'] ?? 'User')[0]; ?></strong>
             </div>

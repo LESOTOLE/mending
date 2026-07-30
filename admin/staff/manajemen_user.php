@@ -123,9 +123,14 @@ include '../../includes/header.php';
                                             <i class="fas fa-pen"></i>
                                         </a>
 
-                                        <a href="proses_user.php?action=delete&id=<?php echo $row['id_user']; ?>" ...>
-                                            <i class="fas fa-trash"></i>
-                                        </a>
+                                        <form class="form-delete" method="POST" action="proses_user.php" style="display:inline-block;">
+                                            <?php echo csrfField(); ?>
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="id_user" value="<?php echo $row['id_user']; ?>">
+                                            <button type="button" class="btn btn-danger btn-sm btn-circle btn-delete-confirm" data-user-name="<?php echo htmlspecialchars($row['nama_lengkap'] ?? $row['username']); ?>" title="Hapus">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -141,19 +146,43 @@ include '../../includes/header.php';
     </div>
 
 </div>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/mending/assets/vendor/js/sweetalert2.all.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         <?php if (isset($_SESSION['form_status'])): ?>
             Swal.fire({
-                icon: '<?php echo $_SESSION['form_status']; ?>',
+                icon: '<?php echo safeJsString($_SESSION['form_status']); ?>',
                 title: '<?php echo ($_SESSION['form_status'] == 'success') ? 'Berhasil!' : 'Gagal!'; ?>',
-                text: '<?php echo $_SESSION['form_message']; ?>',
+                text: '<?php echo safeJsString($_SESSION['form_message']); ?>',
                 timer: 3000,
                 showConfirmButton: false
             });
             <?php unset($_SESSION['form_status'], $_SESSION['form_message']); ?>
         <?php endif; ?>
+
+        // LOGIKA SWEETALERT UNTUK HAPUS
+        const deleteButtons = document.querySelectorAll('.btn-delete-confirm');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const form = this.closest('.form-delete');
+                const userName = this.getAttribute('data-user-name');
+                
+                Swal.fire({
+                    title: `Hapus Akun ${userName}?`,
+                    text: "Anda akan menghapus akun ini secara permanen. Lanjutkan?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
     });
 </script>
 <?php

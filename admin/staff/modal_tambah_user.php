@@ -1,6 +1,6 @@
 <?php
 // PATH KE CONFIG HARUS DISESUAIKAN (dari admin/staff/ ke includes/)
-require_once '../../../includes/config.php'; 
+require_once '../../includes/config.php';
 
 // OTORISASI: Hanya Owner (1) dan HRD (2) yang boleh mengakses formulir.
 checkAuth([1, 2]); 

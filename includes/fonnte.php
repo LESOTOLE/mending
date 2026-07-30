@@ -3,8 +3,8 @@
  * Helper untuk mengirim pesan WhatsApp via Fonnte API
  */
 
-// GANTI DENGAN TOKEN FONNTE ANDA
-define('FONNTE_TOKEN', 'ec2w8n8mDfQYfGMxTF3C');
+// Load token dari file credentials terpisah (agar bisa di-gitignore)
+require_once __DIR__ . '/credentials.php';
 
 /**
  * Fungsi untuk mengirim pesan WhatsApp
@@ -22,9 +22,8 @@ function sendWhatsAppFonnte($target, $message) {
         $target = '62' . substr($target, 1);
     }
     
-    // MOCKING (SIMULASI PENGIRIMAN) - BATALKAN KOMENTAR JIKA INGIN TESTING TANPA MENGHABISKAN KUOTA WA
-    // Ganti 'TOKEN_FONNTE_ANDA_DISINI' dengan string kosong atau placeholder jika ingin mengaktifkan mode simulasi
-    if (FONNTE_TOKEN == 'ec2w8n8mDfQYfGMxTF3C' || FONNTE_TOKEN == '') {
+    // MOCKING (SIMULASI PENGIRIMAN) - Aktif jika token masih default/placeholder
+    if (FONNTE_TOKEN == '__FONNTE_TOKEN_NOT_CONFIGURED__' || FONNTE_TOKEN == '') {
         error_log("WA_MOCK_SENT to $target: $message");
         return ['status' => true, 'message' => 'Token belum diatur. Pesan disimpan di log.'];
     }
@@ -36,7 +35,7 @@ function sendWhatsAppFonnte($target, $message) {
       CURLOPT_RETURNTRANSFER => true,
       CURLOPT_ENCODING => '',
       CURLOPT_MAXREDIRS => 10,
-      CURLOPT_TIMEOUT => 0,
+      CURLOPT_TIMEOUT => 5, // Tambahan timeout agar tidak hang saat offline
       CURLOPT_FOLLOWLOCATION => true,
       CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
       CURLOPT_CUSTOMREQUEST => 'POST',

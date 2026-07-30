@@ -2,10 +2,26 @@
 require_once '../../includes/config.php';
 checkAuth([1, 2]); // Hanya Owner & HRD
 
+// PERBAIKAN: Menerima data dari POST (sesuai form di kelola_karyawan.php)
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: manajemen_user.php");
+    exit;
+}
+
+// PERBAIKAN: Verifikasi CSRF token
+if (!verifyCsrfToken()) {
+    $_SESSION['form_status'] = 'error';
+    $_SESSION['form_message'] = 'Sesi tidak valid. Silakan coba lagi.';
+    header("Location: manajemen_user.php");
+    exit;
+}
+
 $conn = connectDB();
-$my_role_id = $_SESSION['role_id'];
-$action = $_GET['action'] ?? '';
-$target_user_id = $_GET['id'] ?? 0;
+// PERBAIKAN: Gunakan 'id_role' sesuai session key yang disimpan di login.php
+$my_role_id = $_SESSION['id_role'] ?? 0;
+// PERBAIKAN: Ambil dari POST, bukan GET
+$action = $_POST['action'] ?? '';
+$target_user_id = (int)($_POST['id_user'] ?? 0);
 
 if ($action == 'delete' && $target_user_id > 0) {
     
@@ -18,9 +34,13 @@ if ($action == 'delete' && $target_user_id > 0) {
     $stmt->execute();
     $res = $stmt->get_result();
     $target = $res->fetch_assoc();
+    $stmt->close();
     
     if (!$target) {
-        header("Location: manajemen_user.php?msg=User tidak ditemukan");
+        $_SESSION['form_status'] = 'error';
+        $_SESSION['form_message'] = 'User tidak ditemukan.';
+        header("Location: manajemen_user.php");
+        $conn->close();
         exit;
     }
 
@@ -31,7 +51,6 @@ if ($action == 'delete' && $target_user_id > 0) {
 
     if ($my_role_id == 1) {
         // OWNER: Boleh hapus HRD (2), Karyawan (3), Toko (4)
-        // Tidak boleh hapus Owner lain (1) - opsional, biasanya Owner cuma 1
         if (in_array($target_role, [2, 3, 4])) {
             $is_allowed = true;
         }
@@ -44,29 +63,39 @@ if ($action == 'delete' && $target_user_id > 0) {
 
     // 3. EKSEKUSI JIKA DIIZINKAN
     if ($is_allowed) {
-        // Hapus User (Tabel terkait akan ikut terhapus jika pakai ON DELETE CASCADE di database)
-        // Jika tidak CASCADE manual, hapus child table dulu (user_roles, karyawan_details)
-        
         $conn->begin_transaction();
         try {
-            // Hapus Detail
-            $conn->query("DELETE FROM karyawan_details WHERE user_id = $target_user_id");
-            $conn->query("DELETE FROM karyawan WHERE id_user = $target_user_id");
-            // Hapus User Utama
-            $conn->query("DELETE FROM users WHERE id_user = $target_user_id");
+            // PERBAIKAN: Semua query menggunakan prepared statements
+            $stmt1 = $conn->prepare("DELETE FROM karyawan WHERE id_user = ?");
+            $stmt1->bind_param("i", $target_user_id);
+            $stmt1->execute();
+            $stmt1->close();
+
+            $stmt2 = $conn->prepare("DELETE FROM users WHERE id_user = ?");
+            $stmt2->bind_param("i", $target_user_id);
+            $stmt2->execute();
+            $stmt2->close();
             
             $conn->commit();
-            header("Location: manajemen_user.php?msg=Akun berhasil dihapus.");
+            $_SESSION['form_status'] = 'success';
+            $_SESSION['form_message'] = 'Akun berhasil dihapus.';
         } catch (Exception $e) {
             $conn->rollback();
-            header("Location: manajemen_user.php?msg=Gagal menghapus: " . $e->getMessage());
+            $_SESSION['form_status'] = 'error';
+            $_SESSION['form_message'] = 'Gagal menghapus: Terjadi kesalahan database.';
         }
     } else {
-        // Jika HRD mencoba hapus Owner/HRD lain
-        header("Location: manajemen_user.php?msg=Anda tidak memiliki izin menghapus akun level ini.");
+        $_SESSION['form_status'] = 'error';
+        $_SESSION['form_message'] = 'Anda tidak memiliki izin menghapus akun level ini.';
     }
+}
 
+$conn->close();
+// Redirect kembali berdasarkan role
+if ($my_role_id == 2) {
+    header("Location: ../kelola_karyawan.php");
 } else {
     header("Location: manajemen_user.php");
 }
+exit;
 ?>

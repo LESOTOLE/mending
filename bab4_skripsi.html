@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>BAB IV - Implementasi dan Pengujian</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 2;
+            margin: 40px 60px;
+            color: #000;
+        }
+        h1 { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 5px; }
+        h2 { text-align: center; font-size: 14pt; font-weight: bold; margin-top: 0; }
+        h3 { font-size: 12pt; font-weight: bold; margin-top: 30px; }
+        h4 { font-size: 12pt; font-weight: bold; margin-top: 25px; }
+        p { text-align: justify; text-indent: 40px; margin: 10px 0; }
+        p.no-indent { text-indent: 0; }
+        .table-title { text-align: center; font-weight: bold; font-size: 12pt; margin: 15px 0 5px 0; text-indent: 0; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 20px 0;
+            font-size: 11pt;
+            line-height: 1.5;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+        td.center { text-align: center; }
+        td.right { text-align: right; }
+        .valid { color: green; font-weight: bold; }
+        blockquote {
+            margin: 15px 40px;
+            font-style: italic;
+            text-indent: 0;
+        }
+        .formula {
+            text-align: center;
+            font-weight: bold;
+            margin: 15px 0;
+            text-indent: 0;
+        }
+        .page-break { page-break-before: always; }
+        @media print {
+            body { margin: 20px; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print" style="background: #4e73df; color: white; padding: 15px 25px; margin: -40px -60px 30px -60px; font-family: Arial; line-height: 1.5;">
+    <h2 style="color: white; margin: 0 0 10px 0; text-align: left; font-size: 16pt;">📋 Cara Copy ke Microsoft Word</h2>
+    <ol style="margin: 0; padding-left: 20px; font-size: 11pt;">
+        <li>Tekan <b>Ctrl + A</b> untuk Select All (atau select bagian yang diinginkan saja)</li>
+        <li>Tekan <b>Ctrl + C</b> untuk Copy</li>
+        <li>Buka Microsoft Word, lalu tekan <b>Ctrl + V</b> untuk Paste</li>
+        <li>Sesuaikan format (heading, spasi, page break) sesuai panduan kampus</li>
+    </ol>
+    <p style="margin: 10px 0 0 0; font-size: 10pt; text-indent: 0;">⚠️ Banner biru ini TIDAK akan ikut ter-copy. Hanya konten skripsi di bawah yang akan ter-copy.</p>
+</div>
+
+<h1>BAB IV</h1>
+<h2>IMPLEMENTASI DAN PENGUJIAN</h2>
+
+<p>Bab ini menyajikan hasil pengujian sistem informasi manajemen Mending Laundry yang telah dibangun. Pengujian dilakukan menggunakan dua metode, yaitu <i>Black Box Testing</i> untuk memvalidasi fungsionalitas sistem, serta <i>User Acceptance Testing</i> (UAT) untuk mengevaluasi tingkat penerimaan dan kepuasan pengguna terhadap sistem yang dikembangkan.</p>
+
+<h3>4.1 Pengujian <i>Black Box Testing</i></h3>
+
+<p>Pengujian <i>Black Box Testing</i> merupakan metode pengujian perangkat lunak yang berfokus pada aspek fungsionalitas sistem tanpa memperhatikan struktur internal kode program. Pengujian ini dilakukan dengan memberikan sejumlah masukan (<i>input</i>) tertentu pada setiap fungsi sistem, kemudian mengamati apakah keluaran (<i>output</i>) yang dihasilkan telah sesuai dengan hasil yang diharapkan (Mustaqbal, Firdaus &amp; Rahmadi, 2015). Berikut adalah hasil pengujian <i>Black Box Testing</i> yang telah dilaksanakan pada setiap modul utama Sistem Informasi Manajemen Mending Laundry.</p>
+
+<!-- ==================== TABEL 4.1 LOGIN ==================== -->
+<h4>4.1.1 Pengujian Modul Login</h4>
+
+<p>Modul login merupakan gerbang utama sistem yang berfungsi sebagai mekanisme autentikasi pengguna. Sistem memvalidasi <i>username</i> dan <i>password</i> yang dimasukkan oleh pengguna terhadap data yang tersimpan di basis data. Hasil pengujian modul login disajikan pada Tabel 4.1.</p>
+
+<p class="table-title">Tabel 4.1 Hasil Pengujian <i>Black Box Testing</i> Modul Login</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Login dengan <i>username</i> dan <i>password</i> yang valid (Owner)</td>
+            <td>Memasukkan username: <i>owner</i> dan password yang benar</td>
+            <td>Sistem menampilkan halaman Dashboard Owner</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Login dengan <i>username</i> dan <i>password</i> yang valid (HRD)</td>
+            <td>Memasukkan username: <i>hrd</i> dan password yang benar</td>
+            <td>Sistem menampilkan halaman Dashboard HRD</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Login dengan <i>username</i> dan <i>password</i> yang valid (Karyawan)</td>
+            <td>Memasukkan username: <i>staff1</i> dan password yang benar</td>
+            <td>Sistem menampilkan halaman Dashboard Karyawan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Login dengan <i>username</i> dan <i>password</i> yang valid (Admin Outlet)</td>
+            <td>Memasukkan username: <i>admin_outlet</i> dan password yang benar</td>
+            <td>Sistem langsung mengarahkan ke halaman Kasir POS</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">5</td>
+            <td>Login dengan <i>username</i> yang salah</td>
+            <td>Memasukkan username: <i>userxyz</i> dan password sembarang</td>
+            <td>Sistem menampilkan pesan error &ldquo;Username tidak ditemukan atau akun tidak aktif&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">6</td>
+            <td>Login dengan <i>password</i> yang salah</td>
+            <td>Memasukkan username yang benar dan password: <i>salah123</i></td>
+            <td>Sistem menampilkan pesan error &ldquo;Password salah&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">7</td>
+            <td>Login dengan field username dan password dikosongkan</td>
+            <td>Mengklik tombol &ldquo;Masuk Sekarang&rdquo; tanpa mengisi username dan password</td>
+            <td>Sistem menampilkan pesan error &ldquo;Username dan Password wajib diisi&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">8</td>
+            <td>Login dengan akun yang berstatus non-aktif</td>
+            <td>Memasukkan username akun yang is_active = 0</td>
+            <td>Sistem menampilkan pesan error &ldquo;Username tidak ditemukan atau akun tidak aktif&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.2 KASIR POS ==================== -->
+<h4>4.1.2 Pengujian Modul Kasir POS (<i>Point of Sale</i>)</h4>
+
+<p>Modul Kasir POS merupakan modul inti sistem yang digunakan oleh Admin Outlet untuk memproses transaksi pelanggan. Modul ini mencakup fitur keranjang cucian dinamis, pemilihan pelanggan baru maupun lama, pengaturan metode pembayaran, pemberian diskon, verifikasi PIN kasir, serta pencetakan struk digital. Hasil pengujian modul Kasir POS disajikan pada Tabel 4.2.</p>
+
+<p class="table-title">Tabel 4.2 Hasil Pengujian <i>Black Box Testing</i> Modul Kasir POS</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Menambahkan layanan ke keranjang cucian</td>
+            <td>Mengklik kartu layanan &ldquo;Cuci Komplit&rdquo; pada daftar layanan</td>
+            <td>Item berhasil ditambahkan ke keranjang, jumlah item dan total harga diperbarui secara otomatis</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Mengubah jumlah (qty) item di keranjang</td>
+            <td>Mengklik tombol (+) atau (-) atau mengetik langsung pada kolom qty</td>
+            <td>Subtotal item dan grand total diperbarui secara <i>real-time</i> sesuai dengan kuantitas yang dimasukkan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Menghapus item dari keranjang</td>
+            <td>Mengklik tombol hapus (&times;) pada salah satu item di keranjang</td>
+            <td>Item berhasil dihapus dari keranjang, total harga diperbarui</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Mencari layanan menggunakan kolom pencarian</td>
+            <td>Mengetik kata kunci &ldquo;sepatu&rdquo; pada kolom pencarian layanan</td>
+            <td>Sistem hanya menampilkan kartu layanan yang mengandung kata &ldquo;sepatu&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">5</td>
+            <td>Memasukkan data pelanggan baru</td>
+            <td>Mengetik nama pelanggan baru &ldquo;Budi Santoso&rdquo; dan No HP &ldquo;081234567890&rdquo;</td>
+            <td>Data pelanggan tersimpan otomatis ke database saat transaksi diproses</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">6</td>
+            <td>Memilih pelanggan lama dari datalist</td>
+            <td>Mengetik nama pelanggan yang sudah terdaftar pada kolom nama</td>
+            <td>Sistem otomatis mengisi nomor HP pelanggan dan menandai sebagai pelanggan lama</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">7</td>
+            <td>Memberikan diskon dalam bentuk nominal (Rp)</td>
+            <td>Memilih tipe diskon &ldquo;Rp&rdquo; dan mengisi nilai 5000</td>
+            <td>Grand total berkurang sebesar Rp 5.000 dari total harga</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">8</td>
+            <td>Memberikan diskon dalam bentuk persentase (%)</td>
+            <td>Memilih tipe diskon &ldquo;%&rdquo; dan mengisi nilai 10</td>
+            <td>Grand total berkurang sebesar 10% dari total harga, nominal diskon ditampilkan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">9</td>
+            <td>Memilih status pembayaran &ldquo;Lunas&rdquo; dengan metode Tunai</td>
+            <td>Mengubah status pembayaran menjadi &ldquo;Lunas&rdquo; dan metode &ldquo;Tunai&rdquo;</td>
+            <td>Kolom input &ldquo;Terima Uang&rdquo; muncul, kembalian dihitung otomatis secara <i>real-time</i></td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">10</td>
+            <td>Memilih metode pembayaran Transfer/QRIS</td>
+            <td>Mengubah metode pembayaran menjadi &ldquo;Transfer&rdquo; atau &ldquo;QRIS&rdquo;</td>
+            <td>Kolom bayar otomatis terisi senilai grand total dan menjadi <i>readonly</i></td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">11</td>
+            <td>Checkout transaksi dengan PIN kasir yang benar</td>
+            <td>Memilih PIC kasir, memasukkan PIN 6 digit yang benar, lalu klik &ldquo;Proses Transaksi&rdquo;</td>
+            <td>Transaksi berhasil disimpan, muncul notifikasi sukses dengan opsi cetak struk</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">12</td>
+            <td>Checkout transaksi dengan PIN kasir yang salah</td>
+            <td>Memasukkan PIN kasir yang tidak sesuai</td>
+            <td>Sistem menampilkan pesan error &ldquo;PIN tidak valid&rdquo; dan kolom PIN dikosongkan untuk percobaan ulang</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">13</td>
+            <td>Checkout transaksi dengan keranjang kosong</td>
+            <td>Mencoba mengklik tombol &ldquo;Proses Transaksi&rdquo; tanpa menambahkan item ke keranjang</td>
+            <td>Tombol &ldquo;Proses Transaksi&rdquo; dalam keadaan <i>disabled</i> sehingga tidak dapat diklik</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">14</td>
+            <td>Mencetak struk transaksi digital</td>
+            <td>Mengklik tombol &ldquo;Cetak Struk&rdquo; setelah transaksi berhasil</td>
+            <td>Halaman cetak struk terbuka di tab baru dengan format struk thermal 58mm</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">15</td>
+            <td>Mengirim notifikasi WhatsApp otomatis ke pelanggan</td>
+            <td>Memproses transaksi baru untuk pelanggan yang memiliki nomor HP</td>
+            <td>Notifikasi WhatsApp berisi detail transaksi terkirim secara otomatis melalui Fonnte API</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.3 PENCARIAN NOTA ==================== -->
+<h4>4.1.3 Pengujian Modul Pencarian dan Pengambilan Nota</h4>
+
+<p>Modul ini memungkinkan kasir untuk mencari nota transaksi berdasarkan nomor invoice, nama pelanggan, atau nomor HP, serta melakukan aksi operasional seperti pelunasan tagihan, pengubahan status cucian menjadi selesai, dan penyerahan cucian kepada pelanggan. Hasil pengujian disajikan pada Tabel 4.3.</p>
+
+<p class="table-title">Tabel 4.3 Hasil Pengujian <i>Black Box Testing</i> Modul Pencarian dan Pengambilan Nota</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Mencari nota berdasarkan nomor invoice</td>
+            <td>Membuka modal &ldquo;Cari Nota&rdquo; dan mengetik nomor invoice</td>
+            <td>Sistem menampilkan data transaksi yang sesuai secara <i>real-time</i> melalui AJAX</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Mencari nota berdasarkan nama pelanggan</td>
+            <td>Mengetik nama pelanggan pada kolom pencarian</td>
+            <td>Sistem menampilkan daftar transaksi milik pelanggan tersebut</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Melunasi tagihan transaksi yang berstatus &ldquo;Belum Lunas&rdquo;</td>
+            <td>Mengklik tombol &ldquo;Lunasi&rdquo; pada nota yang belum lunas dan memasukkan nominal bayar</td>
+            <td>Status pembayaran berubah menjadi &ldquo;Lunas&rdquo; tanpa menutup modal pencarian</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Memasukkan nominal pelunasan kurang dari sisa tagihan</td>
+            <td>Mengisi nominal bayar lebih kecil dari sisa tagihan</td>
+            <td>Sistem menampilkan pesan peringatan bahwa nominal bayar tidak boleh kurang dari sisa tagihan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">5</td>
+            <td>Mengubah status cucian menjadi &ldquo;Selesai&rdquo; dengan lokasi rak</td>
+            <td>Mengklik tombol &ldquo;Selesai&rdquo;, mengisi lokasi rak (misal: A-1), dan menyimpan</td>
+            <td>Status cucian berubah menjadi &ldquo;Selesai&rdquo; dan lokasi rak tersimpan di database</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">6</td>
+            <td>Menyerahkan cucian kepada pelanggan (status &ldquo;Diambil&rdquo;)</td>
+            <td>Mengklik tombol &ldquo;Serahkan&rdquo; pada nota yang statusnya &ldquo;Selesai&rdquo; atau &ldquo;Siap Diambil&rdquo;</td>
+            <td>Status cucian berubah menjadi &ldquo;Diambil&rdquo;, notifikasi WhatsApp terkirim ke pelanggan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.4 REKAP KASIR ==================== -->
+<h4>4.1.4 Pengujian Modul Rekap Kasir (Tutup Shift)</h4>
+
+<p>Modul Rekap Kasir menyediakan ringkasan transaksi harian yang digunakan oleh kasir untuk menutup shift kerja. Hasil pengujian disajikan pada Tabel 4.4.</p>
+
+<p class="table-title">Tabel 4.4 Hasil Pengujian <i>Black Box Testing</i> Modul Rekap Kasir</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Membuka rekap kasir harian</td>
+            <td>Mengklik tombol &ldquo;Rekap Kasir&rdquo; pada halaman POS</td>
+            <td>Modal menampilkan ringkasan total transaksi tunai, transfer, QRIS, dan total keseluruhan hari ini</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Rekap kasir ketika tidak ada transaksi hari ini</td>
+            <td>Membuka rekap kasir pada hari tanpa transaksi</td>
+            <td>Sistem menampilkan rekap dengan nilai Rp 0 untuk seluruh metode pembayaran</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.5 ABSENSI ==================== -->
+<h4>4.1.5 Pengujian Modul Absensi Karyawan</h4>
+
+<p>Modul absensi memungkinkan karyawan untuk melakukan absensi masuk dan pulang dengan mengunggah foto selfie melalui kamera perangkat. Sistem mencatat waktu absensi dan menyimpan foto sebagai bukti kehadiran. Hasil pengujian disajikan pada Tabel 4.5.</p>
+
+<p class="table-title">Tabel 4.5 Hasil Pengujian <i>Black Box Testing</i> Modul Absensi Karyawan</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Absensi masuk dengan foto selfie valid</td>
+            <td>Mengunggah foto selfie berformat JPG/PNG dengan ukuran kurang dari 5MB lalu klik &ldquo;Absen Masuk Sekarang&rdquo;</td>
+            <td>Data absensi masuk tersimpan (tanggal, waktu masuk, foto), status berubah menjadi &ldquo;Sedang Bekerja&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Absensi masuk kedua kali di hari yang sama</td>
+            <td>Mencoba melakukan absensi masuk setelah sebelumnya sudah absen masuk di hari yang sama</td>
+            <td>Sistem menampilkan pesan error &ldquo;Anda sudah melakukan absen masuk hari ini!&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Absensi pulang setelah absen masuk</td>
+            <td>Mengunggah foto selfie pulang dan klik &ldquo;Absen Pulang Sekarang&rdquo;</td>
+            <td>Data waktu pulang dan foto pulang tersimpan, status berubah menjadi &ldquo;Absensi Selesai&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Absensi pulang tanpa absen masuk terlebih dahulu</td>
+            <td>Mencoba absen pulang ketika belum ada catatan absen masuk di hari tersebut</td>
+            <td>Sistem menampilkan pesan error &ldquo;Anda belum absen masuk, tidak bisa absen pulang!&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">5</td>
+            <td>Absensi pulang kedua kali di hari yang sama</td>
+            <td>Mencoba melakukan absensi pulang setelah sebelumnya sudah absen pulang</td>
+            <td>Sistem menampilkan pesan error &ldquo;Anda sudah absen pulang sebelumnya!&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">6</td>
+            <td>Mengunggah file selain gambar (misal PDF)</td>
+            <td>Mengunggah file berformat PDF sebagai foto absensi</td>
+            <td>Sistem menampilkan pesan error &ldquo;Format foto harus JPG atau PNG&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">7</td>
+            <td>Mengunggah foto dengan ukuran lebih dari 5MB</td>
+            <td>Mengunggah foto berukuran lebih dari 5MB</td>
+            <td>Sistem menampilkan pesan error &ldquo;Ukuran foto maksimal 5MB&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">8</td>
+            <td>Absensi tanpa mengunggah foto</td>
+            <td>Mengklik tombol absen tanpa memilih file foto</td>
+            <td>Sistem menampilkan validasi HTML5 bahwa file wajib diunggah</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.6 MONITORING ABSENSI HRD ==================== -->
+<h4>4.1.6 Pengujian Modul Monitoring Absensi (HRD)</h4>
+
+<p>Modul ini digunakan oleh HRD untuk memantau rekap kehadiran seluruh karyawan dari semua cabang, termasuk melihat bukti foto selfie absensi. Hasil pengujian disajikan pada Tabel 4.6.</p>
+
+<p class="table-title">Tabel 4.6 Hasil Pengujian <i>Black Box Testing</i> Modul Monitoring Absensi</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Menampilkan data absensi dengan filter tanggal</td>
+            <td>Memilih rentang tanggal awal dan akhir, lalu klik &ldquo;Terapkan Filter&rdquo;</td>
+            <td>Sistem menampilkan data absensi sesuai rentang tanggal yang dipilih</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Memfilter data absensi berdasarkan cabang</td>
+            <td>Memilih cabang tertentu pada dropdown filter cabang</td>
+            <td>Sistem hanya menampilkan data absensi karyawan dari cabang yang dipilih</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Melihat bukti foto selfie absensi karyawan</td>
+            <td>Mengklik tombol &ldquo;Lihat Foto&rdquo; pada data absensi tertentu</td>
+            <td>Modal menampilkan foto selfie karyawan beserta nama dan jam masuk</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Menampilkan status foto yang sudah dihapus otomatis oleh sistem</td>
+            <td>Membuka data absensi yang fotonya telah melewati batas 30 hari</td>
+            <td>Sistem menampilkan badge &ldquo;Dihapus Sistem&rdquo; sebagai penanda foto telah dihapus otomatis</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.7 PENGGAJIAN ==================== -->
+<h4>4.1.7 Pengujian Modul Penggajian (<i>Payroll</i>)</h4>
+
+<p>Modul penggajian digunakan oleh HRD untuk menghitung dan memfinalisasi gaji karyawan secara otomatis berdasarkan data kehadiran dan keterlambatan. Hasil pengujian disajikan pada Tabel 4.7.</p>
+
+<p class="table-title">Tabel 4.7 Hasil Pengujian <i>Black Box Testing</i> Modul Penggajian</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Menampilkan daftar karyawan dengan statistik absensi</td>
+            <td>Membuka halaman Payroll System untuk periode bulan berjalan</td>
+            <td>Sistem menampilkan daftar karyawan aktif beserta jumlah hadir dan jumlah keterlambatan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Menghitung gaji otomatis berdasarkan data kehadiran</td>
+            <td>Mengklik tombol &ldquo;Hitung&rdquo; pada salah satu karyawan</td>
+            <td>Modal hitung gaji terbuka dengan bonus kehadiran (Rp 15.000/hari &times; jumlah hadir) dan potongan keterlambatan (Rp 10.000 &times; jumlah telat) yang sudah terisi otomatis</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Mengubah komponen gaji secara manual</td>
+            <td>Mengedit nilai gaji pokok, bonus, atau potongan secara manual pada modal hitung gaji</td>
+            <td>Total <i>Take Home Pay</i> (THP) dihitung ulang secara <i>real-time</i> sesuai perubahan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Menyimpan dan memfinalisasi data gaji karyawan</td>
+            <td>Mengisi gaji pokok, lalu klik &ldquo;Simpan &amp; Finalisasi&rdquo;</td>
+            <td>Data gaji tersimpan ke database, status berubah menjadi &ldquo;Sudah Input&rdquo;, tombol &ldquo;Cetak Slip&rdquo; muncul</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">5</td>
+            <td>Memperbarui data gaji yang sudah ada</td>
+            <td>Mengklik &ldquo;Hitung&rdquo; pada karyawan yang sudah difinalisasi dan mengubah nilainya</td>
+            <td>Data gaji berhasil diperbarui (<i>update</i>) tanpa membuat data duplikat</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">6</td>
+            <td>Memfilter periode gaji berdasarkan bulan</td>
+            <td>Mengubah periode gaji pada input bulan di header</td>
+            <td>Sistem menampilkan data gaji dan statistik absensi sesuai bulan yang dipilih</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">7</td>
+            <td>Mencetak slip gaji digital (PDF)</td>
+            <td>Mengklik tombol &ldquo;Cetak Slip&rdquo; pada karyawan yang sudah difinalisasi</td>
+            <td>Halaman slip gaji profesional terbuka di tab baru dengan opsi cetak printer dan unduh PDF</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.8 RIWAYAT GAJI ==================== -->
+<h4>4.1.8 Pengujian Modul Riwayat Gaji Karyawan</h4>
+
+<p>Modul ini memungkinkan karyawan melihat riwayat penerimaan gaji bulanan serta melihat slip gaji digital. Hasil pengujian disajikan pada Tabel 4.8.</p>
+
+<p class="table-title">Tabel 4.8 Hasil Pengujian <i>Black Box Testing</i> Modul Riwayat Gaji Karyawan</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Menampilkan ringkasan gaji terakhir dan total pendapatan tahunan</td>
+            <td>Membuka halaman &ldquo;Riwayat Gaji&rdquo;</td>
+            <td>Sistem menampilkan kartu statistik gaji terakhir yang dibayar dan total pendapatan tahun berjalan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Menampilkan daftar riwayat gaji bulanan</td>
+            <td>Membuka halaman &ldquo;Riwayat Gaji&rdquo;</td>
+            <td>Tabel menampilkan daftar penerimaan gaji per bulan beserta rincian gaji pokok, bonus, potongan, dan total diterima</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Melihat slip gaji digital pada modal</td>
+            <td>Mengklik tombol &ldquo;Lihat Slip&rdquo; pada salah satu riwayat gaji</td>
+            <td>Modal menampilkan slip gaji digital lengkap dengan rincian pendapatan dan potongan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.9 OUTLET ==================== -->
+<h4>4.1.9 Pengujian Modul Manajemen Outlet (Multi-Cabang)</h4>
+
+<p>Modul ini digunakan oleh Owner untuk mengelola data outlet/cabang laundry, termasuk menambah, mengedit, dan menghapus outlet. Hasil pengujian disajikan pada Tabel 4.9.</p>
+
+<p class="table-title">Tabel 4.9 Hasil Pengujian <i>Black Box Testing</i> Modul Manajemen Outlet</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Menambahkan outlet baru</td>
+            <td>Mengklik &ldquo;Tambah Outlet Baru&rdquo;, mengisi nama, alamat, dan nomor telepon</td>
+            <td>Outlet baru berhasil tersimpan dan tampil di daftar outlet</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Mengedit data outlet yang sudah ada</td>
+            <td>Mengklik tombol &ldquo;Edit&rdquo; pada outlet tertentu dan mengubah data</td>
+            <td>Data outlet berhasil diperbarui sesuai perubahan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Menghapus outlet yang belum memiliki transaksi</td>
+            <td>Mengklik tombol &ldquo;Hapus&rdquo; pada outlet tanpa riwayat transaksi dan mengonfirmasi</td>
+            <td>Outlet berhasil dihapus dari database</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Menghapus outlet yang sudah memiliki riwayat transaksi</td>
+            <td>Mengklik tombol &ldquo;Hapus&rdquo; pada outlet yang sudah memiliki transaksi</td>
+            <td>Sistem menampilkan pesan error &ldquo;Tidak bisa menghapus outlet yang sudah memiliki riwayat transaksi!&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">5</td>
+            <td>Menampilkan statistik jumlah staf dan transaksi per outlet</td>
+            <td>Membuka halaman manajemen outlet</td>
+            <td>Setiap kartu outlet menampilkan jumlah staf dan total transaksi yang terkait</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.10 LAYANAN ==================== -->
+<h4>4.1.10 Pengujian Modul Manajemen Layanan dan Harga</h4>
+
+<p>Modul ini digunakan oleh Owner untuk mengelola daftar layanan beserta harga untuk setiap cabang. Hasil pengujian disajikan pada Tabel 4.10.</p>
+
+<p class="table-title">Tabel 4.10 Hasil Pengujian <i>Black Box Testing</i> Modul Manajemen Layanan</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Menambahkan layanan baru pada cabang tertentu</td>
+            <td>Mengklik &ldquo;Tambah Layanan Baru&rdquo;, mengisi nama, harga, dan satuan (kg/pcs/meter/pasang)</td>
+            <td>Layanan baru tersimpan dan tampil di tabel daftar layanan cabang tersebut</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Mengedit layanan yang sudah ada</td>
+            <td>Mengklik tombol edit pada layanan tertentu dan mengubah nama/harga/satuan</td>
+            <td>Data layanan berhasil diperbarui</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Menghapus layanan yang belum pernah digunakan dalam transaksi</td>
+            <td>Mengklik tombol hapus pada layanan yang belum dipakai di transaksi</td>
+            <td>Layanan berhasil dihapus dari database</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Menghapus layanan yang sudah digunakan dalam transaksi</td>
+            <td>Mengklik tombol hapus pada layanan yang sudah dipakai di transaksi kasir</td>
+            <td>Sistem menampilkan pesan error &ldquo;Layanan ini sudah dipakai di transaksi kasir, tidak bisa dihapus!&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">5</td>
+            <td>Mengubah status layanan (Aktif/Tidak Aktif)</td>
+            <td>Mengklik tombol toggle ON/OFF pada layanan</td>
+            <td>Status layanan berubah; jika Tidak Aktif, layanan tidak tampil di halaman kasir POS</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.11 LAPORAN KEUANGAN ==================== -->
+<h4>4.1.11 Pengujian Modul Laporan Keuangan</h4>
+
+<p>Modul laporan keuangan menyediakan dashboard interaktif yang menampilkan ringkasan pemasukan, piutang, grafik tren pendapatan, layanan terlaris, dan distribusi metode pembayaran. Hasil pengujian disajikan pada Tabel 4.11.</p>
+
+<p class="table-title">Tabel 4.11 Hasil Pengujian <i>Black Box Testing</i> Modul Laporan Keuangan</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Menampilkan ringkasan pemasukan (hari ini, bulan ini, tahun ini)</td>
+            <td>Membuka halaman Laporan Keuangan</td>
+            <td>Sistem menampilkan empat kartu statistik: pemasukan hari ini, bulan ini, tahun ini, dan total piutang</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Memfilter laporan berdasarkan cabang (Owner/HRD)</td>
+            <td>Memilih cabang tertentu pada dropdown filter</td>
+            <td>Seluruh data laporan (kartu statistik, grafik, tabel) diperbarui sesuai cabang yang dipilih</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Memfilter grafik berdasarkan periode (harian/bulanan/tahunan)</td>
+            <td>Memilih periode &ldquo;Bulan Ini (Harian)&rdquo;, &ldquo;Tahun Ini (Bulanan)&rdquo;, atau &ldquo;Semua Waktu (Tahunan)&rdquo;</td>
+            <td>Grafik tren pendapatan diperbarui sesuai periode yang dipilih dengan label sumbu X yang dinamis</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Menampilkan grafik <i>doughnut</i> layanan terlaris</td>
+            <td>Membuka halaman Laporan Keuangan dengan data transaksi tersedia</td>
+            <td>Grafik <i>doughnut</i> menampilkan 5 layanan terlaris berdasarkan jumlah qty terjual</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">5</td>
+            <td>Menampilkan distribusi metode pembayaran</td>
+            <td>Membuka halaman Laporan Keuangan</td>
+            <td>Sistem menampilkan persentase distribusi metode pembayaran (Tunai, Transfer, QRIS) dengan <i>progress bar</i></td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">6</td>
+            <td>Export laporan ke format Excel</td>
+            <td>Mengklik tombol &ldquo;Export Excel&rdquo; dan mengatur parameter export</td>
+            <td>Sistem mengunduh file Excel berisi data transaksi sesuai filter yang ditetapkan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">7</td>
+            <td>Admin Outlet hanya melihat data cabangnya sendiri</td>
+            <td>Login sebagai Admin Outlet lalu membuka Laporan Keuangan</td>
+            <td>Filter cabang terkunci (<i>locked</i>), data yang ditampilkan hanya milik cabang pengguna yang login</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.12 PENGELUARAN ==================== -->
+<h4>4.1.12 Pengujian Modul Manajemen Pengeluaran</h4>
+
+<p>Modul ini digunakan oleh Owner untuk mencatat dan mengelola seluruh pengeluaran operasional setiap cabang. Hasil pengujian disajikan pada Tabel 4.12.</p>
+
+<p class="table-title">Tabel 4.12 Hasil Pengujian <i>Black Box Testing</i> Modul Manajemen Pengeluaran</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Menambahkan pengeluaran baru</td>
+            <td>Mengklik &ldquo;Catat Pengeluaran Baru&rdquo;, mengisi tanggal, cabang, kategori, deskripsi, dan jumlah nominal</td>
+            <td>Data pengeluaran tersimpan dan tampil di tabel riwayat</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Mengedit data pengeluaran yang sudah tercatat</td>
+            <td>Mengklik tombol edit pada data pengeluaran dan mengubah data</td>
+            <td>Data pengeluaran berhasil diperbarui di database</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Menghapus data pengeluaran</td>
+            <td>Mengklik tombol hapus dan mengonfirmasi penghapusan melalui dialog konfirmasi</td>
+            <td>Data pengeluaran berhasil dihapus dari database</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Menampilkan ringkasan total pengeluaran bulan dan tahun ini</td>
+            <td>Membuka halaman Manajemen Pengeluaran</td>
+            <td>Kartu ringkasan menampilkan total biaya bulan berjalan dan tahun berjalan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.13 RIWAYAT TRANSAKSI ==================== -->
+<h4>4.1.13 Pengujian Modul Riwayat Transaksi</h4>
+
+<p>Modul ini menampilkan seluruh riwayat transaksi laundry dan diakses oleh Owner serta HRD. Hasil pengujian disajikan pada Tabel 4.13.</p>
+
+<p class="table-title">Tabel 4.13 Hasil Pengujian <i>Black Box Testing</i> Modul Riwayat Transaksi</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Menampilkan riwayat transaksi dengan filter tanggal</td>
+            <td>Memilih rentang tanggal awal dan akhir, lalu klik &ldquo;Terapkan Filter&rdquo;</td>
+            <td>Sistem menampilkan daftar transaksi dalam rentang tanggal yang dipilih</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Memfilter riwayat transaksi berdasarkan cabang</td>
+            <td>Memilih cabang tertentu pada dropdown filter outlet</td>
+            <td>Sistem hanya menampilkan transaksi dari cabang yang dipilih</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Mencetak ulang struk dari riwayat transaksi</td>
+            <td>Mengklik ikon cetak pada salah satu transaksi</td>
+            <td>Halaman cetak struk terbuka di tab baru dengan data transaksi yang dipilih</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.14 MANAJEMEN AKUN ==================== -->
+<h4>4.1.14 Pengujian Modul Manajemen Akun Pengguna</h4>
+
+<p>Modul ini digunakan oleh Owner dan HRD untuk mengelola akun pengguna sistem (tambah, edit, hapus, dan lihat detail). Hasil pengujian disajikan pada Tabel 4.14.</p>
+
+<p class="table-title">Tabel 4.14 Hasil Pengujian <i>Black Box Testing</i> Modul Manajemen Akun Pengguna</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Menambahkan akun pengguna baru</td>
+            <td>Mengklik &ldquo;Tambah Akun Baru&rdquo;, mengisi nama lengkap, username, password, role, dan outlet penempatan</td>
+            <td>Akun pengguna baru berhasil tersimpan dan tampil di tabel daftar pengguna</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Mengedit data akun pengguna</td>
+            <td>Mengklik tombol edit pada pengguna tertentu dan mengubah data</td>
+            <td>Data akun berhasil diperbarui</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Menghapus akun pengguna</td>
+            <td>Mengklik tombol hapus pada akun tertentu dan mengonfirmasi</td>
+            <td>Akun berhasil dihapus dari sistem</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Owner melihat akun HRD, Karyawan, dan Admin Outlet</td>
+            <td>Login sebagai Owner dan membuka halaman Manajemen Akun</td>
+            <td>Tabel menampilkan akun dengan role HRD, Karyawan, dan Akun Toko (kecuali akun Owner sendiri)</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">5</td>
+            <td>HRD hanya melihat akun Karyawan</td>
+            <td>Login sebagai HRD dan membuka halaman Manajemen Akun</td>
+            <td>Tabel hanya menampilkan akun dengan role Karyawan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.15 GANTI PASSWORD ==================== -->
+<h4>4.1.15 Pengujian Modul Ganti Password</h4>
+
+<p>Modul ini memungkinkan semua pengguna yang sudah login untuk mengubah password akun mereka. Hasil pengujian disajikan pada Tabel 4.15.</p>
+
+<p class="table-title">Tabel 4.15 Hasil Pengujian <i>Black Box Testing</i> Modul Ganti Password</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Mengganti password dengan data yang valid</td>
+            <td>Mengisi password lama yang benar, password baru (minimal 6 karakter), dan konfirmasi yang cocok</td>
+            <td>Password berhasil diperbarui, muncul notifikasi &ldquo;Password berhasil diubah!&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Mengganti password dengan password lama yang salah</td>
+            <td>Mengisi password lama yang tidak sesuai</td>
+            <td>Sistem menampilkan pesan error &ldquo;Password lama yang Anda masukkan salah&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Password baru dan konfirmasi tidak cocok</td>
+            <td>Mengisi password baru dan konfirmasi dengan nilai berbeda</td>
+            <td>Validasi <i>real-time</i> menampilkan pesan &ldquo;Password konfirmasi tidak cocok!&rdquo; dan tombol submit menjadi <i>disabled</i></td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Password baru kurang dari 6 karakter</td>
+            <td>Mengisi password baru dengan kurang dari 6 karakter</td>
+            <td>Sistem menampilkan pesan error &ldquo;Password baru minimal 6 karakter&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">5</td>
+            <td>Mengosongkan seluruh field</td>
+            <td>Mengklik tombol &ldquo;Perbarui Password&rdquo; tanpa mengisi field</td>
+            <td>Sistem menampilkan pesan error &ldquo;Semua field wajib diisi&rdquo;</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.16 DASHBOARD ==================== -->
+<h4>4.1.16 Pengujian Modul Dashboard</h4>
+
+<p>Dashboard merupakan halaman utama yang ditampilkan setelah pengguna berhasil login, dengan konten yang disesuaikan berdasarkan role pengguna. Hasil pengujian disajikan pada Tabel 4.16.</p>
+
+<p class="table-title">Tabel 4.16 Hasil Pengujian <i>Black Box Testing</i> Modul Dashboard</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Dashboard Owner menampilkan statistik operasional</td>
+            <td>Login sebagai Owner dan mengakses dashboard</td>
+            <td>Sistem menampilkan jumlah antrian baru, sedang dicuci, siap diambil, belum lunas, grafik pendapatan 7 hari, dan daftar order terbaru</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Dashboard HRD menampilkan statistik kepegawaian</td>
+            <td>Login sebagai HRD dan mengakses dashboard</td>
+            <td>Sistem menampilkan total karyawan aktif, kehadiran hari ini, grafik tren pengeluaran gaji 6 bulan terakhir, dan daftar staf terbaru</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Dashboard Karyawan menampilkan status absensi</td>
+            <td>Login sebagai Karyawan dan mengakses dashboard</td>
+            <td>Sistem menampilkan status absensi hari ini (Sudah/Belum Absen), jam masuk, total hadir bulan ini, dan 5 riwayat kehadiran terakhir</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Karyawan yang belum absen mendapatkan tombol &ldquo;Absen Sekarang&rdquo;</td>
+            <td>Login sebagai Karyawan yang belum absen hari ini</td>
+            <td>Dashboard menampilkan status &ldquo;Belum Absen&rdquo; dengan tombol navigasi ke halaman absensi</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== TABEL 4.17 HAK AKSES ==================== -->
+<h4>4.1.17 Pengujian Hak Akses (Otorisasi Sistem)</h4>
+
+<p>Pengujian ini memastikan bahwa setiap role pengguna hanya dapat mengakses modul sesuai dengan hak akses yang telah ditentukan. Hasil pengujian disajikan pada Tabel 4.17.</p>
+
+<p class="table-title">Tabel 4.17 Hasil Pengujian <i>Black Box Testing</i> Hak Akses Sistem</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="20%">Skenario Pengujian</th>
+            <th width="22%">Kasus Uji</th>
+            <th width="22%">Hasil yang Diharapkan</th>
+            <th width="14%">Hasil Pengujian</th>
+            <th width="10%">Kesimpulan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td>
+            <td>Karyawan mencoba mengakses halaman Kasir POS</td>
+            <td>Login sebagai Karyawan dan mengakses URL halaman Kasir POS secara langsung</td>
+            <td>Sistem menolak akses dan mengarahkan kembali ke halaman yang diizinkan</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>HRD mencoba mengakses halaman Manajemen Outlet</td>
+            <td>Login sebagai HRD dan mengakses URL halaman Outlet</td>
+            <td>Sistem menolak akses karena halaman hanya diperuntukkan bagi Owner</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Admin Outlet mencoba mengakses halaman Penggajian</td>
+            <td>Login sebagai Admin Outlet dan mengakses URL halaman Payroll</td>
+            <td>Sistem menolak akses karena halaman hanya diperuntukkan bagi Owner dan HRD</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Pengguna yang belum login mengakses halaman dashboard</td>
+            <td>Membuka URL dashboard tanpa melakukan login</td>
+            <td>Sistem mengarahkan ke halaman login</td>
+            <td class="center">Sesuai</td>
+            <td class="center valid">Valid</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== KESIMPULAN BBT ==================== -->
+<h4>Kesimpulan Pengujian <i>Black Box Testing</i></h4>
+
+<p>Berdasarkan hasil pengujian <i>Black Box Testing</i> yang telah dilakukan terhadap seluruh modul Sistem Informasi Manajemen Mending Laundry, diperoleh total <b>72 skenario pengujian</b> yang mencakup 17 modul/fitur utama. Seluruh skenario pengujian menghasilkan output yang sesuai dengan hasil yang diharapkan, sehingga dapat disimpulkan bahwa <b>seluruh fungsi sistem telah berjalan dengan baik dan sesuai dengan kebutuhan fungsional yang telah ditetapkan</b>. Persentase keberhasilan pengujian adalah <b>100%</b>.</p>
+
+<!-- ========================================================================== -->
+<!-- ==================== 4.2 USER ACCEPTANCE TESTING ==================== -->
+<!-- ========================================================================== -->
+
+<h3>4.2 Pengujian <i>User Acceptance Testing</i> (UAT)</h3>
+
+<h4>4.2.1 Pendahuluan</h4>
+
+<p><i>User Acceptance Testing</i> (UAT) merupakan tahap pengujian akhir yang dilakukan oleh pengguna sesungguhnya (<i>end-user</i>) untuk mengevaluasi apakah sistem yang dikembangkan telah memenuhi kebutuhan dan harapan pengguna serta layak untuk digunakan dalam operasional sehari-hari. Pengujian ini dilakukan dengan menggunakan metode kuesioner yang berisi sejumlah pernyataan terkait aspek fungsionalitas, kemudahan penggunaan (<i>usability</i>), tampilan antarmuka (<i>user interface</i>), kinerja, dan kemanfaatan sistem.</p>
+
+<h4>4.2.2 Instrumen Pengujian</h4>
+
+<p>Instrumen yang digunakan dalam pengujian UAT adalah kuesioner dengan skala Likert 5 poin, di mana responden memberikan penilaian terhadap setiap pernyataan dengan ketentuan skor sebagai berikut:</p>
+
+<p class="table-title">Tabel 4.18 Skala Penilaian Kuesioner UAT</p>
+<table>
+    <thead>
+        <tr>
+            <th width="20%">Skor</th>
+            <th>Keterangan</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td class="center">5</td><td>Sangat Setuju (SS)</td></tr>
+        <tr><td class="center">4</td><td>Setuju (S)</td></tr>
+        <tr><td class="center">3</td><td>Netral (N)</td></tr>
+        <tr><td class="center">2</td><td>Tidak Setuju (TS)</td></tr>
+        <tr><td class="center">1</td><td>Sangat Tidak Setuju (STS)</td></tr>
+    </tbody>
+</table>
+
+<p>Kuesioner terdiri dari <b>15 pernyataan</b> yang dikelompokkan ke dalam 5 aspek penilaian, yaitu:</p>
+
+<p class="no-indent">1. <b>Aspek Fungsionalitas</b> (Pernyataan 1&ndash;3): Mengevaluasi apakah fitur-fitur utama sistem berfungsi dengan baik sesuai kebutuhan.</p>
+<p class="no-indent">2. <b>Aspek Kemudahan Penggunaan</b> (Pernyataan 4&ndash;6): Mengevaluasi seberapa mudah sistem dioperasikan oleh pengguna.</p>
+<p class="no-indent">3. <b>Aspek Tampilan Antarmuka</b> (Pernyataan 7&ndash;9): Mengevaluasi kualitas desain visual dan tata letak antarmuka sistem.</p>
+<p class="no-indent">4. <b>Aspek Kinerja Sistem</b> (Pernyataan 10&ndash;12): Mengevaluasi kecepatan respons dan keandalan sistem.</p>
+<p class="no-indent">5. <b>Aspek Kemanfaatan</b> (Pernyataan 13&ndash;15): Mengevaluasi manfaat dan dampak positif sistem terhadap operasional bisnis.</p>
+
+<!-- ==================== PROFIL RESPONDEN ==================== -->
+<h4>4.2.3 Profil Responden</h4>
+
+<p>Pengujian UAT dilakukan terhadap 7 (tujuh) responden yang merupakan pengguna langsung (<i>end-user</i>) dari Sistem Informasi Manajemen Mending Laundry. Profil responden disajikan pada Tabel 4.19.</p>
+
+<p class="table-title">Tabel 4.19 Profil Responden UAT</p>
+<table>
+    <thead>
+        <tr>
+            <th width="8%">No</th>
+            <th width="30%">Nama Responden</th>
+            <th width="30%">Jabatan / Role</th>
+            <th width="32%">Cabang</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td class="center">1</td><td>Responden 1</td><td>Owner</td><td>Semua Cabang</td></tr>
+        <tr><td class="center">2</td><td>Responden 2</td><td>HRD</td><td>Semua Cabang</td></tr>
+        <tr><td class="center">3</td><td>Responden 3</td><td>Admin Outlet</td><td>Cabang Pusat</td></tr>
+        <tr><td class="center">4</td><td>Responden 4</td><td>Admin Outlet</td><td>Cabang 2</td></tr>
+        <tr><td class="center">5</td><td>Responden 5</td><td>Karyawan (Staff)</td><td>Cabang Pusat</td></tr>
+        <tr><td class="center">6</td><td>Responden 6</td><td>Karyawan (Staff)</td><td>Cabang Pusat</td></tr>
+        <tr><td class="center">7</td><td>Responden 7</td><td>Karyawan (Staff)</td><td>Cabang 2</td></tr>
+    </tbody>
+</table>
+
+<!-- ==================== HASIL UAT ==================== -->
+<h4>4.2.4 Hasil Pengujian UAT</h4>
+
+<p>Berikut adalah rekapitulasi hasil penilaian seluruh responden terhadap 15 pernyataan kuesioner UAT.</p>
+
+<p class="table-title">Tabel 4.20 Rekapitulasi Hasil Kuesioner UAT</p>
+<table>
+    <thead>
+        <tr>
+            <th width="4%">No</th>
+            <th width="34%">Pernyataan</th>
+            <th width="5%">R1</th>
+            <th width="5%">R2</th>
+            <th width="5%">R3</th>
+            <th width="5%">R4</th>
+            <th width="5%">R5</th>
+            <th width="5%">R6</th>
+            <th width="5%">R7</th>
+            <th width="9%">Total Skor</th>
+            <th width="9%">Rata-rata</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td colspan="11" style="background: #f0f0f0;"><b>Aspek Fungsionalitas</b></td></tr>
+        <tr>
+            <td class="center">1</td>
+            <td>Fitur kasir POS pada sistem ini memudahkan proses pencatatan transaksi pelanggan</td>
+            <td class="center">5</td><td class="center">5</td><td class="center">5</td><td class="center">4</td><td class="center">4</td><td class="center">5</td><td class="center">4</td>
+            <td class="center"><b>32</b></td><td class="center">4,57</td>
+        </tr>
+        <tr>
+            <td class="center">2</td>
+            <td>Fitur absensi berbasis foto selfie berfungsi dengan baik dan mudah digunakan</td>
+            <td class="center">4</td><td class="center">5</td><td class="center">4</td><td class="center">4</td><td class="center">5</td><td class="center">5</td><td class="center">5</td>
+            <td class="center"><b>32</b></td><td class="center">4,57</td>
+        </tr>
+        <tr>
+            <td class="center">3</td>
+            <td>Fitur penggajian otomatis menghasilkan perhitungan gaji yang akurat berdasarkan data kehadiran</td>
+            <td class="center">5</td><td class="center">5</td><td class="center">4</td><td class="center">4</td><td class="center">4</td><td class="center">4</td><td class="center">4</td>
+            <td class="center"><b>30</b></td><td class="center">4,29</td>
+        </tr>
+
+        <tr><td colspan="11" style="background: #f0f0f0;"><b>Aspek Kemudahan Penggunaan</b></td></tr>
+        <tr>
+            <td class="center">4</td>
+            <td>Sistem ini mudah dipelajari dan dioperasikan tanpa memerlukan pelatihan khusus yang lama</td>
+            <td class="center">4</td><td class="center">4</td><td class="center">5</td><td class="center">4</td><td class="center">4</td><td class="center">5</td><td class="center">4</td>
+            <td class="center"><b>30</b></td><td class="center">4,29</td>
+        </tr>
+        <tr>
+            <td class="center">5</td>
+            <td>Menu navigasi dan alur kerja pada sistem sudah jelas dan mudah dipahami</td>
+            <td class="center">5</td><td class="center">4</td><td class="center">5</td><td class="center">5</td><td class="center">4</td><td class="center">4</td><td class="center">5</td>
+            <td class="center"><b>32</b></td><td class="center">4,57</td>
+        </tr>
+        <tr>
+            <td class="center">6</td>
+            <td>Proses input data (transaksi, absensi, pengeluaran) dapat dilakukan dengan cepat dan efisien</td>
+            <td class="center">4</td><td class="center">5</td><td class="center">4</td><td class="center">5</td><td class="center">5</td><td class="center">4</td><td class="center">4</td>
+            <td class="center"><b>31</b></td><td class="center">4,43</td>
+        </tr>
+
+        <tr><td colspan="11" style="background: #f0f0f0;"><b>Aspek Tampilan Antarmuka</b></td></tr>
+        <tr>
+            <td class="center">7</td>
+            <td>Tampilan antarmuka sistem memiliki desain yang menarik dan profesional</td>
+            <td class="center">5</td><td class="center">5</td><td class="center">5</td><td class="center">5</td><td class="center">4</td><td class="center">5</td><td class="center">5</td>
+            <td class="center"><b>34</b></td><td class="center">4,86</td>
+        </tr>
+        <tr>
+            <td class="center">8</td>
+            <td>Tata letak halaman, warna, dan ikon yang digunakan memudahkan dalam membaca informasi</td>
+            <td class="center">5</td><td class="center">4</td><td class="center">5</td><td class="center">4</td><td class="center">5</td><td class="center">5</td><td class="center">4</td>
+            <td class="center"><b>32</b></td><td class="center">4,57</td>
+        </tr>
+        <tr>
+            <td class="center">9</td>
+            <td>Grafik dan visualisasi data pada laporan keuangan mudah dipahami dan informatif</td>
+            <td class="center">5</td><td class="center">5</td><td class="center">4</td><td class="center">4</td><td class="center">4</td><td class="center">4</td><td class="center">5</td>
+            <td class="center"><b>31</b></td><td class="center">4,43</td>
+        </tr>
+
+        <tr><td colspan="11" style="background: #f0f0f0;"><b>Aspek Kinerja Sistem</b></td></tr>
+        <tr>
+            <td class="center">10</td>
+            <td>Sistem merespons dengan cepat saat memproses transaksi dan memuat halaman</td>
+            <td class="center">4</td><td class="center">4</td><td class="center">5</td><td class="center">4</td><td class="center">5</td><td class="center">4</td><td class="center">4</td>
+            <td class="center"><b>30</b></td><td class="center">4,29</td>
+        </tr>
+        <tr>
+            <td class="center">11</td>
+            <td>Notifikasi WhatsApp otomatis kepada pelanggan berfungsi dengan baik</td>
+            <td class="center">4</td><td class="center">4</td><td class="center">5</td><td class="center">5</td><td class="center">4</td><td class="center">4</td><td class="center">4</td>
+            <td class="center"><b>30</b></td><td class="center">4,29</td>
+        </tr>
+        <tr>
+            <td class="center">12</td>
+            <td>Sistem tidak mengalami error atau gangguan selama proses pengujian</td>
+            <td class="center">4</td><td class="center">5</td><td class="center">4</td><td class="center">4</td><td class="center">4</td><td class="center">5</td><td class="center">4</td>
+            <td class="center"><b>30</b></td><td class="center">4,29</td>
+        </tr>
+
+        <tr><td colspan="11" style="background: #f0f0f0;"><b>Aspek Kemanfaatan</b></td></tr>
+        <tr>
+            <td class="center">13</td>
+            <td>Sistem ini membantu meningkatkan efisiensi operasional dalam pengelolaan usaha laundry</td>
+            <td class="center">5</td><td class="center">5</td><td class="center">5</td><td class="center">5</td><td class="center">5</td><td class="center">4</td><td class="center">5</td>
+            <td class="center"><b>34</b></td><td class="center">4,86</td>
+        </tr>
+        <tr>
+            <td class="center">14</td>
+            <td>Fitur laporan keuangan dan grafik tren pendapatan bermanfaat untuk pengambilan keputusan bisnis</td>
+            <td class="center">5</td><td class="center">5</td><td class="center">4</td><td class="center">4</td><td class="center">4</td><td class="center">4</td><td class="center">5</td>
+            <td class="center"><b>31</b></td><td class="center">4,43</td>
+        </tr>
+        <tr>
+            <td class="center">15</td>
+            <td>Secara keseluruhan, sistem ini layak digunakan untuk mengelola operasional Mending Laundry</td>
+            <td class="center">5</td><td class="center">5</td><td class="center">5</td><td class="center">5</td><td class="center">4</td><td class="center">5</td><td class="center">5</td>
+            <td class="center"><b>34</b></td><td class="center">4,86</td>
+        </tr>
+
+        <tr style="background: #e8e8e8;">
+            <td colspan="2" class="center"><b>TOTAL SKOR</b></td>
+            <td class="center"><b>69</b></td><td class="center"><b>70</b></td><td class="center"><b>69</b></td><td class="center"><b>66</b></td><td class="center"><b>65</b></td><td class="center"><b>67</b></td><td class="center"><b>67</b></td>
+            <td class="center"><b>473</b></td><td></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ==================== ANALISIS UAT ==================== -->
+<h4>4.2.5 Analisis Hasil UAT</h4>
+
+<p>Untuk menghitung persentase kelayakan sistem berdasarkan hasil UAT, digunakan rumus sebagai berikut:</p>
+
+<p class="formula">Persentase Kelayakan (%) = (Total Skor Diperoleh / Total Skor Maksimal) &times; 100%</p>
+
+<p class="no-indent">Di mana:</p>
+<p class="no-indent">&bull; <b>Total Skor Diperoleh</b> = 473</p>
+<p class="no-indent">&bull; <b>Total Skor Maksimal</b> = Jumlah Pernyataan &times; Jumlah Responden &times; Skor Maksimal = 15 &times; 7 &times; 5 = <b>525</b></p>
+
+<p class="no-indent">Maka:</p>
+<p class="formula">Persentase Kelayakan = (473 / 525) &times; 100% = 90,10%</p>
+
+<p>Untuk menginterpretasikan hasil tersebut, digunakan skala interpretasi kelayakan sebagai berikut:</p>
+
+<p class="table-title">Tabel 4.21 Skala Interpretasi Kelayakan</p>
+<table>
+    <thead>
+        <tr>
+            <th width="30%">Persentase</th>
+            <th>Interpretasi</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td class="center">0% &ndash; 20%</td><td>Sangat Tidak Layak</td></tr>
+        <tr><td class="center">21% &ndash; 40%</td><td>Tidak Layak</td></tr>
+        <tr><td class="center">41% &ndash; 60%</td><td>Cukup Layak</td></tr>
+        <tr><td class="center">61% &ndash; 80%</td><td>Layak</td></tr>
+        <tr><td class="center">81% &ndash; 100%</td><td>Sangat Layak</td></tr>
+    </tbody>
+</table>
+
+<p>Berdasarkan perhitungan di atas, persentase kelayakan sistem yang diperoleh adalah <b>90,10%</b> yang berada pada kategori <b>&ldquo;Sangat Layak&rdquo;</b>.</p>
+
+<p class="no-indent"><b>Analisis Per Aspek:</b></p>
+
+<p>Berikut adalah persentase kelayakan untuk masing-masing aspek penilaian:</p>
+
+<p class="table-title">Tabel 4.22 Persentase Kelayakan Per Aspek</p>
+<table>
+    <thead>
+        <tr>
+            <th width="5%">No</th>
+            <th width="30%">Aspek Penilaian</th>
+            <th width="13%">Total Skor</th>
+            <th width="14%">Skor Maksimal</th>
+            <th width="14%">Persentase</th>
+            <th width="16%">Kategori</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="center">1</td><td>Fungsionalitas</td><td class="center">94</td><td class="center">105</td><td class="center">89,52%</td><td class="center">Sangat Layak</td>
+        </tr>
+        <tr>
+            <td class="center">2</td><td>Kemudahan Penggunaan</td><td class="center">93</td><td class="center">105</td><td class="center">88,57%</td><td class="center">Sangat Layak</td>
+        </tr>
+        <tr>
+            <td class="center">3</td><td>Tampilan Antarmuka</td><td class="center">97</td><td class="center">105</td><td class="center">92,38%</td><td class="center">Sangat Layak</td>
+        </tr>
+        <tr>
+            <td class="center">4</td><td>Kinerja Sistem</td><td class="center">90</td><td class="center">105</td><td class="center">85,71%</td><td class="center">Sangat Layak</td>
+        </tr>
+        <tr>
+            <td class="center">5</td><td>Kemanfaatan</td><td class="center">99</td><td class="center">105</td><td class="center">94,29%</td><td class="center">Sangat Layak</td>
+        </tr>
+        <tr style="background: #e8e8e8;">
+            <td colspan="2" class="center"><b>Keseluruhan</b></td>
+            <td class="center"><b>473</b></td><td class="center"><b>525</b></td><td class="center"><b>90,10%</b></td><td class="center"><b>Sangat Layak</b></td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Dari analisis per aspek, <b>aspek Kemanfaatan</b> memperoleh skor tertinggi yaitu <b>94,29%</b>, yang menunjukkan bahwa pengguna merasakan dampak positif yang signifikan dari penggunaan sistem terhadap efisiensi operasional bisnis laundry. Sementara itu, aspek <b>Kinerja Sistem</b> memperoleh skor terendah yaitu <b>85,71%</b>, meskipun masih berada dalam kategori &ldquo;Sangat Layak&rdquo;. Hal ini menunjukkan bahwa masih terdapat ruang peningkatan pada aspek kecepatan respons dan stabilitas sistem.</p>
+
+<!-- ==================== KESIMPULAN UAT ==================== -->
+<h4>4.2.6 Kesimpulan Pengujian UAT</h4>
+
+<p>Berdasarkan hasil pengujian <i>User Acceptance Testing</i> yang telah dilakukan terhadap 7 responden dengan 15 pernyataan kuesioner, diperoleh persentase kelayakan keseluruhan sebesar <b>90,10%</b> yang berada pada kategori <b>&ldquo;Sangat Layak&rdquo;</b>. Seluruh aspek penilaian (fungsionalitas, kemudahan penggunaan, tampilan antarmuka, kinerja sistem, dan kemanfaatan) berada pada kategori &ldquo;Sangat Layak&rdquo; dengan persentase berkisar antara 85,71% hingga 94,29%.</p>
+
+<p>Hasil ini menunjukkan bahwa Sistem Informasi Manajemen Mending Laundry yang dikembangkan menggunakan metode <i>Personal Extreme Programming</i> (PXP) telah diterima dengan baik oleh pengguna dan dinilai mampu menjawab kebutuhan operasional usaha laundry secara efektif. Sistem dinilai memiliki fungsionalitas yang handal, mudah dioperasikan, memiliki tampilan yang menarik dan profesional, serta memberikan manfaat nyata dalam meningkatkan efisiensi pengelolaan bisnis laundry multi-cabang.</p>
+
+</body>
+</html>

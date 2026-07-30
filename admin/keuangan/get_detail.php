@@ -7,11 +7,11 @@ if (isset($_POST['id'])) {
     $conn = connectDB();
     $trx_id = $_POST['id'];
 
-    // Ambil Data Detail Barang
+    // Ambil Data Detail Barang (PERBAIKAN: Nama kolom disesuaikan dengan schema)
     $sql = "SELECT td.*, l.nama_layanan 
             FROM transaksi_detail td 
-            JOIN layanan l ON td.layanan_id = l.id 
-            WHERE td.transaksi_id = ?";
+            JOIN layanan l ON td.id_layanan = l.id_layanan 
+            WHERE td.id_transaksi = ?";
     
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $trx_id);

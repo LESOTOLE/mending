@@ -12,11 +12,9 @@ $is_locked = true;
 
 if (in_array($role_id, [1, 2])) {
     $is_locked = false;
-    if (isset($_GET['outlet_filter'])) {
-        $selected_outlet = $_GET['outlet_filter'];
-    }
+    $selected_outlet = isset($_GET['outlet_filter']) ? (int)$_GET['outlet_filter'] : 0;
 } else {
-    $selected_outlet = $user_outlet_id;
+    $selected_outlet = (int)$user_outlet_id;
 }
 
 // Ambil Daftar Outlet
@@ -60,8 +58,9 @@ if ($periode_grafik == 'bulan_ini') {
 // --- 3. FUNGSI HITUNG OMZET (KOTAK ATAS) ---
 function hitungOmzet($conn, $periode, $outlet_id)
 {
+    $outlet_id = (int)$outlet_id;
     $sql = "SELECT SUM(grand_total) as total FROM transaksi WHERE status_pembayaran = 'Lunas'";
-    if ($outlet_id > 0) $sql .= " AND id_outlet = '$outlet_id'";
+    if ($outlet_id > 0) $sql .= " AND id_outlet = $outlet_id";
 
     if ($periode == 'hari_ini') $sql .= " AND DATE(tgl_masuk) = CURDATE()";
     elseif ($periode == 'bulan_ini') $sql .= " AND MONTH(tgl_masuk) = MONTH(CURRENT_DATE()) AND YEAR(tgl_masuk) = YEAR(CURRENT_DATE())";
@@ -77,7 +76,7 @@ $pemasukan_tahun = hitungOmzet($conn, 'tahun_ini', $selected_outlet);
 
 // Hitung Piutang
 $sql_piutang = "SELECT SUM(grand_total) as total FROM transaksi WHERE status_pembayaran = 'Belum Lunas'";
-if ($selected_outlet > 0) $sql_piutang .= " AND id_outlet = '$selected_outlet'";
+if ($selected_outlet > 0) $sql_piutang .= " AND id_outlet = $selected_outlet";
 $total_piutang = $conn->query($sql_piutang)->fetch_assoc()['total'] ?? 0;
 
 
@@ -88,8 +87,8 @@ $chart_data = [];
 $sql_chart = "SELECT $select_date_chart, SUM(grand_total) as total 
               FROM transaksi 
               WHERE status_pembayaran = 'Lunas' $date_filter_sql";
-if ($selected_outlet > 0) $sql_chart .= " AND id_outlet = '$selected_outlet'";
-$sql_chart .= " " . $group_by_sql_chart;
+    if ($selected_outlet > 0) $sql_chart .= " AND id_outlet = $selected_outlet";
+    $sql_chart .= " " . $group_by_sql_chart;
 
 $res_chart = $conn->query($sql_chart);
 while ($row_c = $res_chart->fetch_assoc()) {
@@ -108,7 +107,7 @@ $sql_pie = "SELECT l.nama_layanan, SUM(td.qty) as total_qty
             JOIN transaksi t ON td.id_transaksi = t.id_transaksi 
             JOIN layanan l ON td.id_layanan = l.id_layanan 
             WHERE t.status_pembayaran = 'Lunas' $date_filter_sql";
-if ($selected_outlet > 0) $sql_pie .= " AND t.id_outlet = '$selected_outlet'";
+if ($selected_outlet > 0) $sql_pie .= " AND t.id_outlet = $selected_outlet";
 $sql_pie .= " GROUP BY l.id_layanan ORDER BY total_qty DESC LIMIT 5";
 
 $res_pie = $conn->query($sql_pie);
@@ -124,14 +123,14 @@ if ($res_pie) {
 $sql_recent = "SELECT no_invoice, tgl_masuk, grand_total, metode_pembayaran
                FROM transaksi 
                WHERE status_pembayaran = 'Lunas'";
-if ($selected_outlet > 0) $sql_recent .= " AND id_outlet = '$selected_outlet'";
+if ($selected_outlet > 0) $sql_recent .= " AND id_outlet = $selected_outlet";
 $sql_recent .= " ORDER BY tgl_masuk DESC LIMIT 10";
 $res_recent = $conn->query($sql_recent);
 
 $sql_metode = "SELECT metode_pembayaran, COUNT(*) as jumlah 
                FROM transaksi 
                WHERE status_pembayaran = 'Lunas' $date_filter_sql";
-if ($selected_outlet > 0) $sql_metode .= " AND id_outlet = '$selected_outlet'";
+if ($selected_outlet > 0) $sql_metode .= " AND id_outlet = $selected_outlet";
 $sql_metode .= " GROUP BY metode_pembayaran";
 $res_metode = $conn->query($sql_metode);
 
@@ -339,10 +338,64 @@ include '../../includes/header.php';
     </div>
 </div>
 
+<!-- Modal Export Excel -->
+<div class="modal fade" id="modalExport" tabindex="-1" aria-labelledby="modalExportLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="export_excel.php" method="GET">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title font-weight-bold" id="modalExportLabel"><i class="fas fa-file-excel me-2"></i>Export Laporan Keuangan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold small">Cabang</label>
+                        <select name="outlet_id" class="form-select">
+                            <?php if (!$is_locked): ?>
+                                <option value="0">Semua Cabang (Global)</option>
+                                <?php foreach ($outlets as $o): ?>
+                                    <option value="<?php echo $o['id_outlet']; ?>"><?php echo htmlspecialchars($o['nama_outlet']); ?></option>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <option value="<?php echo $user_outlet_id; ?>">Cabang Anda</option>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold small">Periode Rentang Waktu</label>
+                        <select name="range" class="form-select" onchange="toggleFilter(this.value)">
+                            <option value="minggu">7 Hari Terakhir</option>
+                            <option value="bulan" selected>Bulan Ini</option>
+                            <option value="tahun">Tahun Ini</option>
+                            <option value="custom">Pilih Tanggal Custom</option>
+                        </select>
+                    </div>
+                    <div id="customDate" style="display: none;">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label font-weight-bold small text-primary">Dari Tanggal</label>
+                                <input type="date" name="start" class="form-control">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label font-weight-bold small text-danger">Sampai Tanggal</label>
+                                <input type="date" name="end" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary shadow-sm fw-bold px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success shadow-sm fw-bold px-4"><i class="fas fa-download me-1"></i> Unduh Excel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <?php include '../../includes/footer.php'; ?>
 
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/mending/assets/vendor/js/chart.js"></script>
 
 <script>
     function toggleFilter(val) {

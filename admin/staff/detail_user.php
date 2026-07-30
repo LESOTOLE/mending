@@ -1,9 +1,9 @@
 <?php
 require_once '../../includes/config.php';
-require_once '../../includes/header.php';
 
-// OTORISASI: Hanya Owner (1) dan HRD (2)
 checkAuth([1, 2]);
+
+require_once '../../includes/header.php';
 
 $id_user = $_GET['id'] ?? 0;
 $conn = connectDB();
@@ -54,7 +54,7 @@ if (!$data) {
                     <?php endif; ?>
                 </div>
                 <div class="card-body text-center">
-                    <img class="img-profile rounded-circle mb-3" src="https://ui-avatars.com/api/?name=<?php echo urlencode($data['nama_lengkap']); ?>&background=random&size=128" style="width: 120px; height: 120px;">
+                    <img class="img-profile rounded-circle mb-3" src="https://ui-avatars.com/api/?name=<?php echo urlencode($data['nama_lengkap']); ?>&background=random&size=128" onerror="this.onerror=null;this.src='/mending/assets/vendor/img/default-avatar.png';" style="width: 120px; height: 120px;">
 
                     <h4 class="font-weight-bold text-dark mb-1"><?php echo $data['nama_lengkap']; ?></h4>
                     <p class="text-muted mb-1"><?php echo $data['nama_role']; ?></p>

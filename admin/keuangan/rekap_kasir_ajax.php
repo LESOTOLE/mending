@@ -12,24 +12,33 @@ $today = date('Y-m-d');
 // 1. Ambil nama outlet
 $outlet_name = "Semua Outlet";
 if ($outlet_id > 0) {
-    $q_outlet = $conn->query("SELECT nama_outlet FROM outlets WHERE id_outlet = $outlet_id");
-    if ($row_out = $q_outlet->fetch_assoc()) $outlet_name = $row_out['nama_outlet'];
+    $stmt_outlet = $conn->prepare("SELECT nama_outlet FROM outlets WHERE id_outlet = ?");
+    $stmt_outlet->bind_param("i", $outlet_id);
+    $stmt_outlet->execute();
+    $res_outlet = $stmt_outlet->get_result();
+    if ($row_out = $res_outlet->fetch_assoc()) $outlet_name = $row_out['nama_outlet'];
 }
 
-// 2. Hitung Rekap Transaksi Hari Ini berdasarkan metode_pembayaran 
-// (Fokus hanya yang sudah Lunas dan masuk uangnya ke Kas/Bank hari ini)
-// Karena ada kemungkinan pelanggan bayar hari ini untuk transaksi lama (di aksi lunasi),
-// tapi saat ini sistem mencatat tgl_masuk. Idealnya kita gunakan tgl pembayaran jika ada.
-// Karena kita hanya punya tgl_masuk dan transaksi langsung dibuat hari ini, kita filter by tgl_masuk.
-$sql_tunai = "SELECT SUM(bayar) as total FROM transaksi WHERE id_outlet = $outlet_id AND metode_pembayaran = 'Tunai' AND DATE(tgl_masuk) = '$today'";
-$sql_transfer = "SELECT SUM(bayar) as total FROM transaksi WHERE id_outlet = $outlet_id AND metode_pembayaran = 'Transfer' AND DATE(tgl_masuk) = '$today'";
-$sql_qris = "SELECT SUM(bayar) as total FROM transaksi WHERE id_outlet = $outlet_id AND metode_pembayaran = 'QRIS' AND DATE(tgl_masuk) = '$today'";
-$sql_count = "SELECT COUNT(*) as jml_transaksi FROM transaksi WHERE id_outlet = $outlet_id AND DATE(tgl_masuk) = '$today'";
+// 2. Hitung Rekap Transaksi Hari Ini berdasarkan metode_pembayaran
+$stmt_tunai = $conn->prepare("SELECT SUM(bayar) as total FROM transaksi WHERE id_outlet = ? AND metode_pembayaran = 'Tunai' AND DATE(tgl_masuk) = ?");
+$stmt_tunai->bind_param("is", $outlet_id, $today);
+$stmt_tunai->execute();
+$tunai = $stmt_tunai->get_result()->fetch_assoc()['total'] ?? 0;
 
-$tunai = $conn->query($sql_tunai)->fetch_assoc()['total'] ?? 0;
-$transfer = $conn->query($sql_transfer)->fetch_assoc()['total'] ?? 0;
-$qris = $conn->query($sql_qris)->fetch_assoc()['total'] ?? 0;
-$jml_trx = $conn->query($sql_count)->fetch_assoc()['jml_transaksi'] ?? 0;
+$stmt_transfer = $conn->prepare("SELECT SUM(bayar) as total FROM transaksi WHERE id_outlet = ? AND metode_pembayaran = 'Transfer' AND DATE(tgl_masuk) = ?");
+$stmt_transfer->bind_param("is", $outlet_id, $today);
+$stmt_transfer->execute();
+$transfer = $stmt_transfer->get_result()->fetch_assoc()['total'] ?? 0;
+
+$stmt_qris = $conn->prepare("SELECT SUM(bayar) as total FROM transaksi WHERE id_outlet = ? AND metode_pembayaran = 'QRIS' AND DATE(tgl_masuk) = ?");
+$stmt_qris->bind_param("is", $outlet_id, $today);
+$stmt_qris->execute();
+$qris = $stmt_qris->get_result()->fetch_assoc()['total'] ?? 0;
+
+$stmt_count = $conn->prepare("SELECT COUNT(*) as jml_transaksi FROM transaksi WHERE id_outlet = ? AND DATE(tgl_masuk) = ?");
+$stmt_count->bind_param("is", $outlet_id, $today);
+$stmt_count->execute();
+$jml_trx = $stmt_count->get_result()->fetch_assoc()['jml_transaksi'] ?? 0;
 
 $total_semua = $tunai + $transfer + $qris;
 

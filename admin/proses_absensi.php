@@ -4,9 +4,18 @@ require_once '../includes/config.php';
 checkAuth([1, 2]); 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
+    // PERBAIKAN: Verifikasi CSRF token
+    if (!verifyCsrfToken()) {
+        $_SESSION['form_status'] = 'error';
+        $_SESSION['form_message'] = 'Sesi tidak valid. Silakan coba lagi.';
+        header("Location: kelola_karyawan.php");
+        exit;
+    }
+
     $conn = connectDB();
     $action = $_POST['action'];
-    $id_user = (int)$_POST['id_user'] ?? 0;
+    // PERBAIKAN: Fix operator precedence — cast harus membungkus seluruh ekspresi
+    $id_user = (int)($_POST['id_user'] ?? 0);
     $tanggal = date('Y-m-d');
     $waktu = date('Y-m-d H:i:s');
     $success_msg = "Absensi berhasil dicatat.";

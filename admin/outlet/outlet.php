@@ -1,14 +1,18 @@
 <?php
 session_start();
 require_once '../../includes/config.php';
+
+checkAuth([1]);
+
 require_once '../../includes/header.php';
 
-// HANYA OWNER (Role 1) YANG BOLEH AKSES HALAMAN INI
-checkAuth([1]); 
 $conn = connectDB();
 
 // --- PROSES CRUD (Create, Update, Delete) ---
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (!verifyCsrfToken()) {
+        echo "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire('Error', 'Sesi telah kedaluwarsa atau request tidak valid. Silakan coba lagi.', 'error'); });</script>";
+    } else {
     $aksi = $_POST['aksi'] ?? '';
     
     if ($aksi == 'tambah') {
@@ -48,7 +52,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id = (int)$_POST['id_outlet'];
         
         // Pengecekan: Jangan izinkan hapus jika ada transaksi yang nyangkut di outlet ini
-        $cek = $conn->query("SELECT id_transaksi FROM transaksi WHERE id_outlet = $id LIMIT 1");
+        $stmt_cek = $conn->prepare("SELECT id_transaksi FROM transaksi WHERE id_outlet = ? LIMIT 1");
+        $stmt_cek->bind_param("i", $id);
+        $stmt_cek->execute();
+        $cek = $stmt_cek->get_result();
         if ($cek->num_rows > 0) {
              echo "<script>
                 document.addEventListener('DOMContentLoaded', function() {
@@ -65,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     });
                 </script>";
             }
+        }
         }
     }
 }
@@ -142,6 +150,7 @@ $result = $conn->query($sql);
                 <button type="button" class="close text-white" data-bs-dismiss="modal">&times;</button>
             </div>
             <form method="POST">
+                <?php echo csrfField(); ?>
                 <div class="modal-body bg-light">
                     <input type="hidden" name="aksi" id="aksiOutlet" value="tambah">
                     <input type="hidden" name="id_outlet" id="idOutlet">
@@ -169,6 +178,7 @@ $result = $conn->query($sql);
 </div>
 
 <form id="formHapus" method="POST" style="display:none;">
+    <?php echo csrfField(); ?>
     <input type="hidden" name="aksi" value="hapus">
     <input type="hidden" name="id_outlet" id="idHapus">
 </form>

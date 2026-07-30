@@ -127,6 +127,7 @@ endif;
                             </td>
                             <td>
                                 <form method="POST" action="proses_absensi.php" style="display:inline-block;">
+                                    <?php echo csrfField(); ?>
                                     <input type="hidden" name="id_user" value="<?php echo $k['id_user']; ?>">
                                     
                                     <?php if (is_null($masuk)): ?>
@@ -142,9 +143,10 @@ endif;
                             </td>
                             
                             <td>
-                                <a href="staff/edit_user.php?id=<?php echo $k['id_user']; ?>" class="btn btn-sm btn-info text-white"><i class="fas fa-edit"></i></a>
+                                <a href="staff/edit_user.php?id=<?php echo $k['id_user']; ?>&ref=kelola_karyawan" class="btn btn-sm btn-info text-white"><i class="fas fa-edit"></i></a>
                                 
-                                <form class="form-delete" method="POST" action="proses_user.php" style="display:inline-block;">
+                                <form class="form-delete" method="POST" action="staff/proses_user.php" style="display:inline-block;">
+                                    <?php echo csrfField(); ?>
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id_user" value="<?php echo $k['id_user']; ?>">
                                     
@@ -176,8 +178,9 @@ unset($_SESSION['form_message']);
 document.addEventListener('DOMContentLoaded', function() {
     
     // --- 1. NOTIFIKASI TAMBAH/EDIT/HAPUS ---
-    const formStatus = '<?php echo $status; ?>';
-    const formMessage = '<?php echo htmlspecialchars($message); ?>';
+    // PERBAIKAN: Escape $status untuk mencegah XSS
+    const formStatus = '<?php echo safeJsString($status); ?>';
+    const formMessage = '<?php echo safeJsString($message); ?>';
 
     if (formStatus && formMessage) {
         Swal.fire({

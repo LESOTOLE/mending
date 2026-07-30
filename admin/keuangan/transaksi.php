@@ -1,21 +1,21 @@
 <?php
-session_start();
 require_once '../../includes/config.php';
 
 // 1. OTORISASI (Owner & Admin Outlet)
 checkAuth([1, 4]);
 $page_title = "Kasir POS";
 $conn       = connectDB();
-$user_id    = $_SESSION['user_id'] ?? 0;
+// PERBAIKAN: Gunakan 'id_user' sesuai yang disimpan di login.php
+$user_id    = $_SESSION['id_user'] ?? 0;
 
 // 2. LOGIKA OUTLET
-$user_outlet_id = $_SESSION['outlet_id'] ?? 0;
+$user_outlet_id = $_SESSION['id_outlet'] ?? 0;
 if ($user_outlet_id == 0) {
     $sql_first = "SELECT id_outlet, nama_outlet FROM outlets ORDER BY nama_outlet ASC LIMIT 1";
     $res_first = $conn->query($sql_first);
     if ($row_first = $res_first->fetch_assoc()) {
         $user_outlet_id = $row_first['id_outlet'];
-        $_SESSION['outlet_id'] = $user_outlet_id;
+        $_SESSION['id_outlet'] = $user_outlet_id;
         $_SESSION['outlet_name'] = $row_first['nama_outlet'];
     }
 }
@@ -118,12 +118,20 @@ include '../../includes/header_pos.php';
         background: #eef2ff;
     }
 
+    button,
+    input,
+    select {
+        touch-action: manipulation;
+        /* Hindari delay tap di tablet */
+    }
+
     .qty-input-box {
-        width: 60px;
+        width: 75px;
         text-align: center;
+        font-size: 1.2rem;
         font-weight: bold;
-        border: 1px solid #4e73df;
-        border-radius: 5px;
+        border: 2px solid #4e73df;
+        border-radius: 8px;
         color: #4e73df;
         background: #f8f9fc;
     }
@@ -178,7 +186,7 @@ include '../../includes/header_pos.php';
             <div class="row g-3">
                 <?php foreach ($layanan_list as $l): ?>
                     <div class="col-xl-3 col-lg-4 col-md-6 service-item-col" data-name="<?php echo strtolower($l['nama_layanan']); ?>">
-                        <div class="card service-card shadow-sm p-3 text-center h-100" onclick="window.addToCart(<?php echo $l['id_layanan']; ?>)">
+                        <div class="card service-card shadow-sm p-4 text-center h-100" onclick="window.addToCart(<?php echo $l['id_layanan']; ?>)">
                             <div class="mb-3 text-primary mt-2">
                                 <?php
                                 $n = strtolower($l['nama_layanan']);
@@ -191,7 +199,7 @@ include '../../includes/header_pos.php';
                                 ?>
                                 <i class="fas <?php echo $icon; ?> fa-3x"></i>
                             </div>
-                            <h6 class="fw-bold text-dark text-truncate small mb-2"><?php echo $l['nama_layanan']; ?></h6>
+                            <h6 class="fw-bold text-dark text-truncate small mb-2"><?php echo htmlspecialchars($l['nama_layanan']); ?></h6>
                             <span class="badge bg-primary rounded-pill px-3 py-2">Rp <?php echo number_format($l['harga'], 0, ',', '.'); ?> / <?php echo $l['satuan']; ?></span>
                         </div>
                     </div>
@@ -214,17 +222,18 @@ include '../../includes/header_pos.php';
             </div>
 
             <div class="checkout-footer">
-                <form id="formCheckout" action="proses_transaksi_pos.php" method="POST">
+                <form id="formCheckout" action="proses_aksi_pos.php" method="POST">
+                    <?php echo csrfField(); ?>
                     <input type="hidden" name="outlet_id" value="<?php echo $user_outlet_id; ?>">
                     <input type="hidden" name="items_data" id="itemsDataInput">
                     <input type="hidden" name="total_harga" id="totalHargaInput">
                     <input type="hidden" name="id_pelanggan_lama" id="id_pelanggan_lama" value="">
 
-                    <div class="bg-light p-2 rounded border mb-3">
-                        <label class="small fw-bold text-primary mb-1"><i class="fas fa-user me-1"></i> Data Pelanggan</label>
+                    <div class="bg-light p-3 rounded border mb-3">
+                        <label class="small fw-bold text-primary mb-2"><i class="fas fa-user me-1"></i> Data Pelanggan</label>
                         <div class="row g-2">
                             <div class="col-7">
-                                <input class="form-control form-control-sm fw-bold border-primary" list="pelangganOptions" id="inputNamaPelanggan" name="nama_pelanggan" placeholder="Nama / Ketik Baru..." required autocomplete="off">
+                                <input class="form-control form-control-lg fs-6 fw-bold border-primary shadow-sm" list="pelangganOptions" id="inputNamaPelanggan" name="nama_pelanggan" placeholder="Nama / Ketik Baru..." required autocomplete="off">
                                 <datalist id="pelangganOptions">
                                     <?php foreach ($pelanggan_list as $p): ?>
                                         <option value="<?php echo $p['nama_pelanggan']; ?>" data-id="<?php echo $p['id_pelanggan']; ?>" data-hp="<?php echo $p['no_hp']; ?>">
@@ -232,42 +241,61 @@ include '../../includes/header_pos.php';
                                 </datalist>
                             </div>
                             <div class="col-5">
-                                <input type="text" class="form-control form-control-sm" id="inputHpPelanggan" name="no_hp_pelanggan" placeholder="No HP/WA">
+                                <input type="text" class="form-control form-control-lg fs-6 shadow-sm" id="inputHpPelanggan" name="no_hp_pelanggan" placeholder="No HP/WA">
                             </div>
                         </div>
                     </div>
 
-                    <div class="row g-2 mb-2">
+                    <div class="row g-2 mb-3">
                         <div class="col-4">
-                            <label class="small fw-bold text-gray-600">Status</label>
-                            <select class="form-select form-select-sm fw-bold border-danger text-danger" name="status_pembayaran" id="status_pembayaran">
+                            <label class="small fw-bold text-gray-600 mb-1">Status</label>
+                            <select class="form-select form-select-lg fs-6 fw-bold border-danger text-danger shadow-sm" name="status_pembayaran" id="status_pembayaran">
                                 <option value="Belum Lunas">Belum Lunas</option>
                                 <option value="Lunas" class="text-success">Lunas</option>
                             </select>
                         </div>
                         <div class="col-4">
-                            <label class="small fw-bold text-gray-600">Metode</label>
-                            <select class="form-select form-select-sm fw-bold" name="metode_pembayaran" id="metode_pembayaran">
+                            <label class="small fw-bold text-gray-600 mb-1">Metode</label>
+                            <select class="form-select form-select-lg fs-6 fw-bold shadow-sm" name="metode_pembayaran" id="metode_pembayaran">
                                 <option value="Tunai">Tunai</option>
                                 <option value="Transfer">Transfer</option>
                                 <option value="QRIS">QRIS</option>
                             </select>
                         </div>
                         <div class="col-4">
-                            <label class="small fw-bold text-gray-600">Lokasi Rak</label>
-                            <input type="text" class="form-select-sm form-control" name="lokasi_rak" placeholder="Cth: A-1">
+                            <label class="small fw-bold text-gray-600 mb-1">Lokasi Rak</label>
+                            <input type="text" class="form-control form-control-lg fs-6 shadow-sm" name="lokasi_rak" placeholder="Cth: A-1">
                         </div>
                     </div>
 
-                    <div class="bg-white p-2 rounded border border-primary mb-3" id="boxKalkulasi" style="display:none;">
+                    <div class="row g-2 mb-3">
+                        <div class="col-7">
+                            <label class="small fw-bold text-gray-600 mb-1">Catatan Khusus</label>
+                            <input type="text" class="form-control form-control-lg fs-6 shadow-sm" name="catatan" placeholder="Cth: Noda luntur, jangan disetrika panas">
+                        </div>
+                        <div class="col-5">
+                            <label class="small fw-bold text-gray-600 mb-1">Diskon</label>
+                            <div class="input-group input-group-lg shadow-sm">
+                                <select class="form-select bg-light fw-bold border-danger text-danger fs-6" id="tipe_diskon" style="max-width: 75px;">
+                                    <option value="rp">Rp</option>
+                                    <option value="persen">%</option>
+                                </select>
+                                <input type="number" class="form-control text-danger fw-bold border-danger fs-6" id="input_diskon_raw" placeholder="0" min="0" step="0.01">
+                            </div>
+                            <input type="hidden" name="diskon" id="input_diskon" value="0">
+                            <div class="text-danger fw-bold mt-1" id="label_nominal_diskon" style="display:none; font-size: 0.85rem;"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-3 rounded border border-primary mb-3 shadow-sm" id="boxKalkulasi" style="display:none;">
                         <div class="row g-2 align-items-center">
                             <div class="col-6">
-                                <label class="small fw-bold text-success mb-0">Terima Uang (Rp)</label>
-                                <input type="number" class="form-control fw-bold text-success border-success" name="jumlah_bayar" id="input_bayar" placeholder="0">
+                                <label class="small fw-bold text-success mb-2">Terima Uang (Rp)</label>
+                                <input type="number" class="form-control form-control-lg fs-5 fw-bold text-success border-success" name="jumlah_bayar" id="input_bayar" placeholder="0">
                             </div>
                             <div class="col-6 text-end">
-                                <label class="small fw-bold text-primary mb-0">Kembalian</label>
-                                <div class="h5 fw-bold text-primary m-0" id="input_kembalian">Rp 0</div>
+                                <label class="small fw-bold text-primary mb-2">Kembalian</label>
+                                <div class="h4 fw-bold text-primary m-0" id="input_kembalian">Rp 0</div>
                                 <input type="hidden" name="kembalian" id="kembalian_asli" value="0">
                             </div>
                         </div>
@@ -275,7 +303,7 @@ include '../../includes/header_pos.php';
 
                     <div class="row g-2 mb-3">
                         <div class="col-5">
-                            <select class="form-select fw-bold bg-light" name="id_user_kasir" required>
+                            <select class="form-select form-select-lg fs-6 fw-bold bg-light shadow-sm" name="id_user_kasir" required>
                                 <option value="">-- Pilih PIC --</option>
                                 <?php foreach ($karyawan_list as $k): ?>
                                     <option value="<?php echo $k['id_user']; ?>"><?php echo explode(' ', $k['nama_lengkap'])[0]; ?></option>
@@ -283,7 +311,7 @@ include '../../includes/header_pos.php';
                             </select>
                         </div>
                         <div class="col-7">
-                            <input type="password" class="form-control text-center fw-bold letter-spacing-2" name="auth_pin" placeholder="PIN KASIR (6 DIGIT)" maxlength="6" pattern="[0-9]{6}" required>
+                            <input type="password" class="form-control form-control-lg text-center fw-bold letter-spacing-2 shadow-sm" name="auth_pin" placeholder="PIN KASIR (6 DIGIT)" maxlength="6" pattern="[0-9]{6}" required>
                         </div>
                     </div>
 
@@ -339,10 +367,39 @@ include '../../includes/header_pos.php';
     </div>
 </div>
 
+<!-- Modal Atur Rak -->
+<div class="modal fade" id="modalAturRak" tabindex="-1">
+    <div class="modal-dialog">
+        <form id="formAturRak" method="POST">
+            <?php echo csrfField(); ?>
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-check-circle me-2"></i> Konfirmasi Selesai & Rak</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-white">
+                    <p class="mb-3">Nota Atas Nama: <strong class="text-primary" id="rak_nama_pelanggan"></strong></p>
+                    <input type="hidden" name="aksi" value="selesai_rak">
+                    <input type="hidden" name="id_transaksi" id="rak_id_transaksi">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Lokasi Rak / Penyimpanan</label>
+                        <input type="text" class="form-control" name="lokasi_rak" placeholder="Contoh: Rak A-1" required autocomplete="off">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning fw-bold text-dark"><i class="fas fa-save me-1"></i> Simpan</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <?php include '../../includes/footer.php'; ?>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/mending/assets/vendor/js/jquery-3.6.0.min.js"></script>
+<script src="/mending/assets/vendor/js/sweetalert2.all.min.js"></script>
 
 <script>
     const layananData = <?php echo $json_layanan; ?>;
@@ -406,39 +463,43 @@ include '../../includes/header_pos.php';
             total += sub;
             totalQty += parseFloat(item.qty);
             container.innerHTML += `
-            <div class="card mb-2 border-0 shadow-sm p-2 rounded">
+            <div class="card mb-3 border-0 shadow-sm p-3 rounded">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div style="width: 45%">
-                        <div class="fw-bold text-dark small">${item.nama}</div>
-                        <small class="text-primary fw-bold">${formatRupiah(item.harga)}</small>
+                    <div style="width: 40%">
+                        <div class="fw-bold text-dark fs-6">${item.nama}</div>
+                        <span class="text-primary fw-bold">${formatRupiah(item.harga)}</span>
                     </div>
-                    <div class="d-flex align-items-center gap-1">
-                        <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="window.updateQtyManual(${i}, ${item.qty - 1})"><i class="fas fa-minus" style="font-size: 10px;"></i></button>
-                        <input type="number" step="0.01" class="qty-input-box py-1" value="${item.qty}" onchange="window.updateQtyManual(${i}, this.value)" onclick="this.select()" style="width: 50px;">
-                        <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="window.updateQtyManual(${i}, ${item.qty + 1})"><i class="fas fa-plus" style="font-size: 10px;"></i></button>
-                        <small class="fw-bold text-muted ms-1">${item.satuan}</small>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-secondary px-3 py-2 shadow-sm rounded" onclick="window.updateQtyManual(${i}, ${item.qty - 1})"><i class="fas fa-minus"></i></button>
+                        <input type="number" step="0.01" class="qty-input-box py-2" value="${item.qty}" onchange="window.updateQtyManual(${i}, this.value)" onclick="this.select()">
+                        <button type="button" class="btn btn-outline-secondary px-3 py-2 shadow-sm rounded" onclick="window.updateQtyManual(${i}, ${item.qty + 1})"><i class="fas fa-plus"></i></button>
+                        <small class="fw-bold text-muted ms-2">${item.satuan}</small>
                     </div>
-                    <div class="text-end" style="width: 25%">
-                        <div class="fw-bold text-dark small">${formatRupiah(sub)}</div>
+                    <div class="text-end" style="width: 20%">
+                        <div class="fw-bold text-dark fs-6">${formatRupiah(sub)}</div>
                     </div>
-                    <button type="button" onclick="window.removeItem(${i})" class="btn btn-sm text-danger px-1"><i class="fas fa-times"></i></button>
+                    <button type="button" onclick="window.removeItem(${i})" class="btn text-danger px-3 py-2 shadow-sm rounded-circle"><i class="fas fa-times fa-lg"></i></button>
                 </div>
             </div>`;
         });
 
-        document.getElementById('grandTotalDisplay').innerText = formatRupiah(total);
         document.getElementById('totalHargaInput').value = total;
         document.getElementById('cartCountBadge').innerText = totalQty + ' Pcs/Kg';
         document.getElementById('itemsDataInput').value = JSON.stringify(keranjang);
         hitungKembalian();
     }
 
+    // Hitung ulang jika diskon berubah
+    $('#input_diskon_raw, #tipe_diskon').on('input change', hitungKembalian);
+
     // --- FUNGSI JAM DIGITAL LIVE ---
     function updateClock() {
         const now = new Date();
         const clockEl = document.getElementById('liveClock');
         if (clockEl) {
-            clockEl.innerText = now.toLocaleTimeString('id-ID', { hour12: false });
+            clockEl.innerText = now.toLocaleTimeString('id-ID', {
+                hour12: false
+            });
         }
     }
     setInterval(updateClock, 1000);
@@ -446,8 +507,29 @@ include '../../includes/header_pos.php';
 
     function hitungKembalian() {
         let t = parseFloat(document.getElementById('totalHargaInput').value) || 0;
+
+        let rawDiskon = parseFloat(document.getElementById('input_diskon_raw').value) || 0;
+        let tipeDiskon = document.getElementById('tipe_diskon').value;
+        let nominalDiskon = 0;
+
+        if (tipeDiskon === 'persen') {
+            nominalDiskon = (rawDiskon / 100) * t;
+            document.getElementById('label_nominal_diskon').innerText = '- ' + formatRupiah(nominalDiskon);
+            document.getElementById('label_nominal_diskon').style.display = 'block';
+        } else {
+            nominalDiskon = rawDiskon;
+            document.getElementById('label_nominal_diskon').style.display = 'none';
+        }
+
+        document.getElementById('input_diskon').value = nominalDiskon;
+
+        let grandTotal = t - nominalDiskon;
+        if (grandTotal < 0) grandTotal = 0;
+
+        document.getElementById('grandTotalDisplay').innerText = formatRupiah(grandTotal);
+
         let b = parseFloat(document.getElementById('input_bayar').value) || 0;
-        let k = b - t;
+        let k = b - grandTotal;
         let el = document.getElementById('input_kembalian');
 
         if (k < 0) {
@@ -493,12 +575,15 @@ include '../../includes/header_pos.php';
                             renderCart();
                             $('#formCheckout')[0].reset();
                             $('#id_pelanggan_lama').val('');
+                            $('#input_diskon_raw').val('');
+                            $('#input_diskon').val('0');
+                            $('#label_nominal_diskon').hide();
                             $('#boxKalkulasi').hide();
                             $('#input_kembalian').text('Rp 0');
                             $('#status_pembayaran').removeClass('text-success border-success').addClass('text-danger border-danger');
                         });
                     } else {
-                        Swal.fire('Gagal!', response.message, 'error');
+                        Swal.fire('Gagal!', response.pesan || 'Terjadi kesalahan tidak diketahui', 'error');
                         $('input[name="auth_pin"]').val('').focus();
                     }
                 },
@@ -569,7 +654,8 @@ include '../../includes/header_pos.php';
             $('#hasilPencarian').html('<div class="text-center my-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i></div>');
             $.post('cari_transaksi_ajax.php', {
                 keyword: keyword,
-                outlet_id: "<?php echo $user_outlet_id; ?>"
+                outlet_id: "<?php echo $user_outlet_id; ?>",
+                csrf_token: "<?php echo generateCsrfToken(); ?>"
             }, function(data) {
                 $('#hasilPencarian').html(data);
             });
@@ -593,13 +679,52 @@ include '../../includes/header_pos.php';
         $('#modalRekapKasir').on('shown.bs.modal', function() {
             $('#hasilRekapKasir').html('<div class="text-center my-5"><i class="fas fa-spinner fa-spin fa-3x text-success mb-3"></i><p class="text-muted">Menghitung uang kasir...</p></div>');
             $.post('rekap_kasir_ajax.php', {
-                outlet_id: "<?php echo $user_outlet_id; ?>"
+                outlet_id: "<?php echo $user_outlet_id; ?>",
+                csrf_token: "<?php echo generateCsrfToken(); ?>"
             }, function(data) {
                 $('#hasilRekapKasir').html(data);
             }).fail(function() {
                 $('#hasilRekapKasir').html('<div class="alert alert-danger">Gagal memuat rekap. Periksa koneksi internet.</div>');
             });
         });
+    });
+
+    // ==========================================
+    // FITUR SELESAI & ATUR RAK
+    // ==========================================
+    window.aksiAturRak = (id, nama) => {
+        $('#rak_id_transaksi').val(id);
+        $('#rak_nama_pelanggan').text(nama);
+        $('#formAturRak')[0].reset();
+        $('#modalAturRak').modal('show');
+    };
+
+    $('#formAturRak').on('submit', function(e) {
+        e.preventDefault();
+        let btn = $(this).find('button[type="submit"]');
+        let originalHtml = btn.html();
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>');
+
+        $.post('proses_aksi_pos.php', $(this).serialize())
+            .done(function(response) {
+                $('#modalAturRak').modal('hide');
+                if (response.status === 'success') {
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: 'Cucian telah diupdate ke status Selesai dan lokasi rak tersimpan.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    window.loadDataNota($('#inputCariOrder').val());
+                } else {
+                    Swal.fire('Error', response.pesan || 'Gagal memproses data.', 'error');
+                }
+            }).fail(function() {
+                Swal.fire('Error', 'Gagal memproses data. Coba lagi.', 'error');
+            }).always(function() {
+                btn.prop('disabled', false).html(originalHtml);
+            });
     });
 
     // --- FUNGSI LUNASI & AMBIL (Tanpa Refresh Layar / Modal Tetap Buka) ---
@@ -633,7 +758,8 @@ include '../../includes/header_pos.php';
                 $.post('proses_aksi_pos.php', {
                     aksi: 'lunasi',
                     id_transaksi: id,
-                    bayar_susulan: r.value
+                    bayar_susulan: r.value,
+                    csrf_token: "<?php echo generateCsrfToken(); ?>"
                 }).done(function() {
                     Swal.fire({
                         title: 'Berhasil!',
@@ -674,14 +800,21 @@ include '../../includes/header_pos.php';
                 // Eksekusi PHP di belakang layar via AJAX
                 $.post('proses_aksi_pos.php', {
                     aksi: 'ambil',
-                    id_transaksi: id
+                    id_transaksi: id,
+                    csrf_token: "<?php echo generateCsrfToken(); ?>"
                 }).done(function() {
                     Swal.fire({
-                        title: 'Berhasil!',
-                        text: 'Cucian telah diserahkan ke pelanggan.',
+                        title: 'Berhasil Diserahkan!',
+                        text: 'Cucian telah diserahkan ke pelanggan. Cetak struk pengambilan?',
                         icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fas fa-print"></i> Cetak Struk Pengambilan',
+                        cancelButtonText: 'Tutup',
+                        confirmButtonColor: '#4e73df'
+                    }).then((res) => {
+                        if (res.isConfirmed) {
+                            window.open('../keuangan/cetak_struk.php?id=' + id + '&tipe=ambil', '_blank');
+                        }
                     });
                     // Refresh isi Modal TANPA menutupnya
                     window.loadDataNota($('#inputCariOrder').val());

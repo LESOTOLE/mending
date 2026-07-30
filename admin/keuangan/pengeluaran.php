@@ -67,7 +67,7 @@ function formatRupiah($angka) {
 include '../../includes/header.php'; 
 ?>
 
-<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="/mending/assets/vendor/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 
 <div class="container-fluid">
     <h3 class="mb-4 text-primary fw-bold"><i class="fas fa-hand-holding-usd me-2"></i>Manajemen Pengeluaran</h3>
@@ -148,6 +148,7 @@ include '../../includes/header.php';
                                     </button>
 
                                     <form class="form-delete" method="POST" action="proses_pengeluaran.php" style="display:inline-block;">
+                                        <?php echo csrfField(); ?>
                                         <input type="hidden" name="action" value="hapus">
                                         <input type="hidden" name="pengeluaran_id" value="<?php echo $p['id_pengeluaran']; ?>">
                                         
@@ -174,8 +175,8 @@ include 'modal_tambah_pengeluaran.php';
 include '../../includes/footer.php'; 
 ?>
 
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="/mending/assets/vendor/js/jquery.dataTables.min.js"></script>
+<script src="/mending/assets/vendor/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -205,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const categories = <?php echo json_encode($kategori_list); ?>;
     
     let formHtml = `<form action="proses_pengeluaran.php" method="POST">
+        <?php echo csrfField(); ?>
         <input type="hidden" name="action" value="edit">
         <input type="hidden" name="pengeluaran_id" value="${data.id_pengeluaran}">
         
@@ -305,8 +307,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    const status = '<?php echo $status; ?>';
-    const message = '<?php echo htmlspecialchars($message); ?>';
+    const status = '<?php echo safeJsString($status); ?>';
+    const message = '<?php echo safeJsString($message); ?>';
 
     if (status && message) {
         Swal.fire({
