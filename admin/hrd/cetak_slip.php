@@ -41,7 +41,7 @@ $qr_data = urlencode("VERIFIED BY MENDING LAUNDRY\nRef: $auth_code\nNama: {$data
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Slip Gaji - <?php echo $data['nama_lengkap']; ?></title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/mending/assets/vendor/css/inter.css" rel="stylesheet">
     <link rel="stylesheet" href="/mending/assets/vendor/css/all.min.css">
     
     <script src="/mending/assets/vendor/js/html2pdf.bundle.min.js"></script>
