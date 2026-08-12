@@ -189,14 +189,37 @@ endif;
                     <input type="hidden" name="foto_base64" id="fotoBase64Wajah">
                     <input type="hidden" name="face_descriptor" id="descriptorWajah">
 
+                    <!-- Tab Mode Input: Kamera / File Foto -->
+                    <div class="btn-group w-100 mb-3" role="group">
+                        <input type="radio" class="btn-check" name="mode_input_wajah" id="modeKamera" value="kamera" checked>
+                        <label class="btn btn-outline-primary fw-bold" for="modeKamera"><i class="fas fa-camera me-1"></i> Ambil via Kamera</label>
+
+                        <input type="radio" class="btn-check" name="mode_input_wajah" id="modeFile" value="file">
+                        <label class="btn btn-outline-primary fw-bold" for="modeFile"><i class="fas fa-folder-open me-1"></i> Pilih File Foto</label>
+                    </div>
+
                     <div id="badgeStatusWajah" class="alert alert-info py-2 font-weight-bold mb-3">
                         <i class="fas fa-spinner fa-spin me-1"></i> Memuat Model Wajah...
                     </div>
 
-                    <div style="position: relative; width: 100%; max-width: 360px; margin: 0 auto;">
+                    <!-- Container Kamera Stream -->
+                    <div id="containerKamera" style="position: relative; width: 100%; max-width: 360px; margin: 0 auto;">
                         <video id="videoWajah" width="100%" height="270" autoplay muted style="border-radius:12px; background:#000; object-fit: cover;"></video>
                         <canvas id="canvasOverlay" style="position: absolute; top:0; left:0; width:100%; height:100%;"></canvas>
                     </div>
+
+                    <!-- Container Upload File Foto -->
+                    <div id="containerFile" style="display: none; width: 100%; max-width: 360px; margin: 0 auto;">
+                        <div class="mb-3 text-start">
+                            <label class="form-label fw-bold small text-muted"><i class="fas fa-image me-1"></i> Pilih File Foto Wajah (JPG / PNG):</label>
+                            <input type="file" id="inputFileWajah" accept="image/*" class="form-control form-control-sm">
+                            <small class="text-muted" style="font-size: 11px;">Pastikan foto wajah terlihat jelas dan tegak menghadap kamera.</small>
+                        </div>
+                        <div class="text-center">
+                            <img id="imgPreviewFile" style="max-width: 100%; max-height: 250px; border-radius: 12px; display: none; object-fit: contain;" class="shadow-sm border">
+                        </div>
+                    </div>
+
                 </div>
                 <div class="modal-footer bg-white">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-dismiss="modal">Batal</button>
@@ -375,6 +398,119 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300);
     }
 
+    // --- MODE SWITCHER: KAMERA VS FILE FOTO ---
+    const radioKamera = document.getElementById('modeKamera');
+    const radioFile = document.getElementById('modeFile');
+    const containerKamera = document.getElementById('containerKamera');
+    const containerFile = document.getElementById('containerFile');
+    const inputFileWajah = document.getElementById('inputFileWajah');
+    const imgPreviewFile = document.getElementById('imgPreviewFile');
+
+    function switchMode(mode) {
+        const btnSimpan = document.getElementById('btnSimpanWajah');
+        const badge = document.getElementById('badgeStatusWajah');
+
+        if (mode === 'kamera') {
+            containerKamera.style.display = 'block';
+            containerFile.style.display = 'none';
+            if (btnSimpan) btnSimpan.disabled = true;
+            if (badge) {
+                badge.className = 'alert alert-info py-2 font-weight-bold mb-3';
+                badge.innerHTML = '<i class="fas fa-camera me-1"></i> Mengaktifkan Kamera...';
+            }
+            startWebcam().then(camOk => {
+                if (camOk) startFaceDetection();
+            });
+        } else {
+            stopWebcam();
+            containerKamera.style.display = 'none';
+            containerFile.style.display = 'block';
+            if (btnSimpan) btnSimpan.disabled = true;
+            if (inputFileWajah) inputFileWajah.value = '';
+            if (imgPreviewFile) imgPreviewFile.style.display = 'none';
+            if (badge) {
+                badge.className = 'alert alert-info py-2 font-weight-bold mb-3';
+                badge.innerHTML = '<i class="fas fa-folder-open me-1"></i> Pilih file foto wajah karyawan di bawah.';
+            }
+        }
+    }
+
+    if (radioKamera) radioKamera.addEventListener('change', () => switchMode('kamera'));
+    if (radioFile) radioFile.addEventListener('change', () => switchMode('file'));
+
+    // --- DETEKSI WAJAH DARI UNGGAH FILE FOTO ---
+    if (inputFileWajah) {
+        inputFileWajah.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const badge = document.getElementById('badgeStatusWajah');
+            const btnSimpan = document.getElementById('btnSimpanWajah');
+            const inputBase64 = document.getElementById('fotoBase64Wajah');
+            const inputDescriptor = document.getElementById('descriptorWajah');
+
+            if (badge) {
+                badge.className = 'alert alert-info py-2 font-weight-bold mb-3';
+                badge.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Menganalisis Wajah dari Foto...';
+            }
+            if (btnSimpan) btnSimpan.disabled = true;
+
+            const loaded = await loadModels();
+            if (!loaded) {
+                if (badge) {
+                    badge.className = 'alert alert-danger py-2 font-weight-bold mb-3';
+                    badge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Gagal memuat model wajah.';
+                }
+                return;
+            }
+
+            try {
+                const img = await faceapi.bufferToImage(file);
+                if (imgPreviewFile) {
+                    imgPreviewFile.src = img.src;
+                    imgPreviewFile.style.display = 'block';
+                }
+
+                const detection = await faceapi.detectSingleFace(img)
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+
+                if (detection) {
+                    if (badge) {
+                        badge.className = 'alert alert-success py-2 font-weight-bold mb-3';
+                        badge.innerHTML = '<i class="fas fa-check-circle me-1"></i> Wajah Terdeteksi pada Foto! Siap Disimpan.';
+                    }
+                    if (btnSimpan) btnSimpan.disabled = false;
+
+                    if (inputDescriptor) {
+                        inputDescriptor.value = JSON.stringify(Array.from(detection.descriptor));
+                    }
+
+                    if (inputBase64) {
+                        const snapCanvas = document.createElement('canvas');
+                        snapCanvas.width = img.naturalWidth || img.width;
+                        snapCanvas.height = img.naturalHeight || img.height;
+                        const snapCtx = snapCanvas.getContext('2d');
+                        snapCtx.drawImage(img, 0, 0);
+                        inputBase64.value = snapCanvas.toDataURL('image/jpeg', 0.8);
+                    }
+                } else {
+                    if (badge) {
+                        badge.className = 'alert alert-danger py-2 font-weight-bold mb-3';
+                        badge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Wajah tidak terdeteksi pada foto. Pilih foto lain yang lebih jelas.';
+                    }
+                    if (btnSimpan) btnSimpan.disabled = true;
+                }
+            } catch (err) {
+                console.error("Error analyzing photo file:", err);
+                if (badge) {
+                    badge.className = 'alert alert-danger py-2 font-weight-bold mb-3';
+                    badge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Gagal membaca file gambar.';
+                }
+            }
+        });
+    }
+
     const daftarWajahButtons = document.querySelectorAll('.btn-daftar-wajah');
     const modalEl = document.getElementById('modalDaftarWajah');
 
@@ -385,6 +521,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             document.getElementById('idUserWajah').value = userId;
             document.getElementById('modalTitleWajah').innerHTML = '<i class="fas fa-camera me-1"></i> Registrasi Wajah: ' + userName;
+
+            // Reset mode to kamera
+            if (radioKamera) radioKamera.checked = true;
+            if (containerKamera) containerKamera.style.display = 'block';
+            if (containerFile) containerFile.style.display = 'none';
+            if (inputFileWajah) inputFileWajah.value = '';
+            if (imgPreviewFile) imgPreviewFile.style.display = 'none';
 
             const badge = document.getElementById('badgeStatusWajah');
             if (badge) {
