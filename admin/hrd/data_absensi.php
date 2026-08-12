@@ -83,15 +83,17 @@ include '../../includes/header.php';
     <div class="card shadow mb-4">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+                <table class="table table-bordered table-hover align-middle" width="100%" cellspacing="0">
                     <thead class="bg-primary text-white text-center">
                         <tr>
                             <th>No</th>
                             <th>Tanggal</th>
-                            <th>Jam Masuk</th>
                             <th>Nama Karyawan</th>
                             <th>Cabang</th>
-                            <th>Bukti Selfie</th>
+                            <th>Jam Masuk</th>
+                            <th>Jam Pulang</th>
+                            <th>Status Verifikasi</th>
+                            <th>Bukti Selfie & GPS</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -99,28 +101,42 @@ include '../../includes/header.php';
                         $no = 1;
                         if ($result->num_rows > 0):
                             while ($row = $result->fetch_assoc()):
+                                $status_ver = $row['status_verifikasi'] ?? 'valid';
                         ?>
                                 <tr>
                                     <td class="text-center"><?php echo $no++; ?></td>
-                                    <td class="text-center"><?php echo date('d/m/Y', strtotime($row['tanggal'])); ?></td>
-                                    <td class="text-center fw-bold text-primary"><?php echo $row['waktu_masuk']; ?></td>
-                                    <td><?php echo htmlspecialchars($row['nama_lengkap']); ?></td>
+                                    <td class="text-center font-weight-bold"><?php echo date('d/m/Y', strtotime($row['tanggal'])); ?></td>
+                                    <td class="font-weight-bold"><?php echo htmlspecialchars($row['nama_lengkap']); ?></td>
                                     <td><?php echo htmlspecialchars($row['nama_outlet']); ?></td>
+                                    <td class="text-center fw-bold text-success"><?php echo $row['waktu_masuk'] ?: '-'; ?></td>
+                                    <td class="text-center fw-bold text-danger"><?php echo $row['waktu_pulang'] ?: '-'; ?></td>
                                     <td class="text-center">
-                                        <?php if ($row['foto_masuk'] == 'kadaluarsa'): ?>
-                                            <span class="badge bg-warning text-dark px-2 py-1" title="Foto dihapus otomatis setelah 30 hari untuk menghemat server">
-                                                <i class="fas fa-trash-alt mr-1"></i> Dihapus Sistem
-                                            </span>
-
-                                        <?php elseif (!empty($row['foto_masuk'])): ?>
-                                            <button class="btn btn-info btn-sm shadow-sm"
-                                                onclick="showSelfie('<?php echo $row['foto_masuk']; ?>', '<?php echo $row['nama_lengkap']; ?>', '<?php echo $row['waktu_masuk']; ?>')">
-                                                <i class="fas fa-eye mr-1"></i> Lihat Foto
-                                            </button>
-
+                                        <?php if ($status_ver === 'valid'): ?>
+                                            <span class="badge bg-success text-white px-2 py-1"><i class="fas fa-check-circle me-1"></i> Valid (Face+GPS)</span>
                                         <?php else: ?>
-                                            <span class="badge bg-secondary text-white px-3 py-2">Tidak ada foto</span>
+                                            <span class="badge bg-danger text-white px-2 py-1"><i class="fas fa-times-circle me-1"></i> Invalid</span>
                                         <?php endif; ?>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <?php if (!empty($row['foto_masuk'])): ?>
+                                                <button class="btn btn-info shadow-sm"
+                                                    onclick="showSelfie('<?php echo safeJsString($row['foto_masuk']); ?>', '<?php echo safeJsString($row['nama_lengkap']); ?>', 'Masuk: <?php echo $row['waktu_masuk']; ?>', '<?php echo $row['lat_masuk']; ?>', '<?php echo $row['long_masuk']; ?>')">
+                                                    <i class="fas fa-sign-in-alt me-1"></i> Selfie Masuk
+                                                </button>
+                                            <?php endif; ?>
+
+                                            <?php if (!empty($row['foto_pulang'])): ?>
+                                                <button class="btn btn-warning text-dark shadow-sm"
+                                                    onclick="showSelfie('<?php echo safeJsString($row['foto_pulang']); ?>', '<?php echo safeJsString($row['nama_lengkap']); ?>', 'Pulang: <?php echo $row['waktu_pulang']; ?>', '<?php echo $row['lat_pulang']; ?>', '<?php echo $row['long_pulang']; ?>')">
+                                                    <i class="fas fa-sign-out-alt me-1"></i> Selfie Pulang
+                                                </button>
+                                            <?php endif; ?>
+
+                                            <?php if (empty($row['foto_masuk']) && empty($row['foto_pulang'])): ?>
+                                                <span class="badge bg-secondary text-white px-2 py-1">Tidak ada foto</span>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php
@@ -128,7 +144,7 @@ include '../../includes/header.php';
                         else:
                             ?>
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">Data absensi tidak ditemukan untuk periode ini.</td>
+                                <td colspan="8" class="text-center py-4 text-muted">Data absensi tidak ditemukan untuk periode ini.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -138,19 +154,21 @@ include '../../includes/header.php';
     </div>
 </div>
 
+<!-- Modal Selfie Preview -->
 <div class="modal fade" id="modalSelfie" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-dark text-white border-0">
-                <h5 class="modal-title" id="modalTitle">Bukti Absensi</h5>
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title font-weight-bold" id="modalTitle"><i class="fas fa-camera me-1"></i> Bukti Absensi Karyawan</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center bg-light">
-                <img id="imgSelfie" src="" class="img-fluid rounded shadow" alt="Selfie Karyawan">
-                <div class="mt-3 p-2 bg-white rounded border">
-                    <p class="mb-0 small text-muted">Absen atas nama:</p>
-                    <h5 id="modalNama" class="font-weight-bold text-primary mb-0"></h5>
-                    <p id="modalJam" class="small text-danger font-weight-bold"></p>
+                <img id="imgSelfie" src="" class="img-fluid rounded shadow border mb-3" style="max-height: 350px; object-fit: contain;" alt="Selfie Karyawan">
+                <div class="p-3 bg-white rounded border text-start shadow-sm">
+                    <p class="mb-1 small text-muted">Karyawan:</p>
+                    <h5 id="modalNama" class="font-weight-bold text-primary mb-2"></h5>
+                    <p id="modalJam" class="small text-dark font-weight-bold mb-2"></p>
+                    <div id="modalGps" class="small alert alert-secondary py-2 mb-0" style="display: none;"></div>
                 </div>
             </div>
         </div>
@@ -158,17 +176,35 @@ include '../../includes/header.php';
 </div>
 
 <script>
-    function showSelfie(fotoPath, nama, jam) {
-        // Sesuaikan path folder foto Anda di sini (misal: ../../uploads/absensi/)
-        const fullPath = "../../uploads/absensi/" + fotoPath;
+    function showSelfie(fotoPath, nama, jam, lat, long) {
+        let fullPath = fotoPath;
+        if (fotoPath === 'kadaluarsa') {
+            fullPath = '../../assets/img/expired_placeholder.png';
+        } else if (!fotoPath.startsWith('http') && !fotoPath.startsWith('/')) {
+            fullPath = '../../' + fotoPath;
+        }
 
         document.getElementById('imgSelfie').src = fullPath;
         document.getElementById('modalNama').innerText = nama;
-        document.getElementById('modalJam').innerText = "Jam Masuk: " + jam;
+        document.getElementById('modalJam').innerText = "Waktu Absen: " + jam;
 
-        // Tampilkan Modal Bootstrap 5
-        var myModal = new bootstrap.Modal(document.getElementById('modalSelfie'));
-        myModal.show();
+        const gpsBox = document.getElementById('modalGps');
+        if (lat && long && lat !== 'null' && long !== 'null') {
+            const mapsUrl = `https://www.google.com/maps?q=${lat},${long}`;
+            gpsBox.innerHTML = `<i class="fas fa-map-marker-alt text-danger me-1"></i> Titik GPS: <a href="${mapsUrl}" target="_blank" class="fw-bold text-decoration-none">${lat}, ${long} <i class="fas fa-external-link-alt ms-1"></i></a>`;
+            gpsBox.style.display = 'block';
+        } else {
+            gpsBox.style.display = 'none';
+        }
+
+        let myModal = null;
+        const modalEl = document.getElementById('modalSelfie');
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            myModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            myModal.show();
+        } else if (typeof $ !== 'undefined' && $.fn.modal) {
+            $('#modalSelfie').modal('show');
+        }
     }
 </script>
 
