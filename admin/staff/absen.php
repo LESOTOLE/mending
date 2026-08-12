@@ -353,7 +353,21 @@ document.addEventListener('DOMContentLoaded', function() {
             return true;
         } catch (err) {
             console.error("Webcam error:", err);
-            updateFaceBadge(false, "Kamera Tidak Diizinkan");
+            let errMsg = "Kamera Tidak Diizinkan / Terblokir";
+            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                errMsg = "Akses via IP wajib Gunakan http://localhost atau HTTPS";
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                errMsg = "Kamera sedang dipakai aplikasi lain (Zoom/OBS)";
+            } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                errMsg = "Izin Kamera Diblokir di Browser";
+            }
+            updateFaceBadge(false, errMsg);
+            
+            const alertBox = document.getElementById('statusAlert');
+            if (alertBox) {
+                alertBox.className = 'alert alert-danger py-2 px-3 mt-3 mb-0 small text-center fw-bold';
+                alertBox.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i> Gagal Membuka Kamera: ${errMsg}. Periksa izin browser Anda.`;
+            }
             return false;
         }
     }
