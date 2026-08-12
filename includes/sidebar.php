@@ -25,6 +25,7 @@ $is_man_cabang    = ($current_page == 'outlet.php');
 $is_user        = ($current_page == 'manajemen_user.php');
 $is_pos         = ($current_page == 'transaksi.php');
 $is_absen    = ($current_page == 'data_absensi.php');
+$is_absen_wajah = ($current_page == 'absen.php');
 $is_gaji    = ($current_page == 'gaji.php');
 $is_riwayat_gaji = ($current_page == 'riwayat_gaji.php');
 $is_ganti_pass  = ($current_page == 'ganti_password.php');
@@ -173,6 +174,11 @@ $role_name = $_SESSION['role_name'] ?? 'User';
 
         <?php if ($role_id == 3): ?>
             <li class="nav-item mt-2">
+                <a href="<?php echo $base_path; ?>staff/absen.php" class="nav-link text-dark <?php echo ($current_page == 'absen.php') ? 'active bg-white bg-opacity-25 rounded' : ''; ?>">
+                    <i class="fas fa-camera-retro fa-fw me-2"></i> Absen Wajah & GPS
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="<?php echo $base_path; ?>staff/absensi.php" class="nav-link text-dark <?php echo ($current_page == 'absensi.php') ? 'active bg-white bg-opacity-25 rounded' : ''; ?>">
                     <i class="fas fa-fingerprint fa-fw me-2"></i> Absensi Harian
                 </a>
