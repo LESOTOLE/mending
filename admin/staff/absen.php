@@ -329,13 +329,24 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadModels() {
         if (modelsLoaded) return true;
 
+        if (typeof faceapi === 'undefined') {
+            updateFaceBadge(false, "Library face-api.min.js belum ter-load");
+            return false;
+        }
+
+        const pathName = window.location.pathname;
+        const adminIdx = pathName.indexOf('/admin');
+        const baseDir = (adminIdx !== -1) ? pathName.substring(0, adminIdx) : '';
+        const absoluteModelUrl = window.location.origin + baseDir + '/assets/vendor/face-api/models/';
+
         const pathsToTry = [
-            '../../assets/vendor/face-api/models',
-            '../assets/vendor/face-api/models',
-            '/mending/assets/vendor/face-api/models',
-            'assets/vendor/face-api/models'
+            absoluteModelUrl,
+            window.location.origin + '/mending/assets/vendor/face-api/models/',
+            '../../assets/vendor/face-api/models/',
+            '../assets/vendor/face-api/models/'
         ];
 
+        let lastErr = null;
         for (let MODEL_URL of pathsToTry) {
             try {
                 await Promise.all([
@@ -347,11 +358,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log("Face-API models loaded successfully from:", MODEL_URL);
                 return true;
             } catch (err) {
+                lastErr = err;
                 console.warn("Failed loading models from " + MODEL_URL + ":", err);
             }
         }
 
-        updateFaceBadge(false, "Gagal Memuat Model Wajah");
+        const errDetail = lastErr ? (lastErr.message || String(lastErr)) : 'Gagal fetch model';
+        updateFaceBadge(false, "Gagal Memuat Model (" + errDetail + ")");
         return false;
     }
 

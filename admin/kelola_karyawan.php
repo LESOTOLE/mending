@@ -293,13 +293,27 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modelsLoaded) return true;
         const badge = document.getElementById('badgeStatusWajah');
 
+        if (typeof faceapi === 'undefined') {
+            if (badge) {
+                badge.className = 'alert alert-danger py-2 font-weight-bold mb-3';
+                badge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Library face-api.min.js belum ter-load di browser.';
+            }
+            return false;
+        }
+
+        const pathName = window.location.pathname;
+        const adminIdx = pathName.indexOf('/admin');
+        const baseDir = (adminIdx !== -1) ? pathName.substring(0, adminIdx) : '';
+        const absoluteModelUrl = window.location.origin + baseDir + '/assets/vendor/face-api/models/';
+
         const pathsToTry = [
-            '../assets/vendor/face-api/models',
-            '../../assets/vendor/face-api/models',
-            '/mending/assets/vendor/face-api/models',
-            'assets/vendor/face-api/models'
+            absoluteModelUrl,
+            window.location.origin + '/mending/assets/vendor/face-api/models/',
+            '../assets/vendor/face-api/models/',
+            '../../assets/vendor/face-api/models/'
         ];
 
+        let lastErr = null;
         for (let MODEL_URL of pathsToTry) {
             try {
                 await Promise.all([
@@ -311,13 +325,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log("Face-API models loaded successfully from:", MODEL_URL);
                 return true;
             } catch (err) {
+                lastErr = err;
                 console.warn("Failed loading models from " + MODEL_URL + ":", err);
             }
         }
 
         if (badge) {
             badge.className = 'alert alert-danger py-2 font-weight-bold mb-3';
-            badge.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Gagal Memuat Model Wajah. Periksa folder assets/vendor/face-api/models.';
+            const errDetail = lastErr ? (lastErr.message || String(lastErr)) : 'Gagal fetch model';
+            badge.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i> Gagal Memuat Model Wajah (${errDetail}).`;
         }
         return false;
     }
