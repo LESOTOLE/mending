@@ -1,8 +1,8 @@
 <?php
 require_once '../includes/config.php'; 
 
-// OTORISASI: Hanya Owner (1) yang boleh mengakses.
-checkAuth([1]); 
+// OTORISASI: Owner (1) dan HRD (2) yang boleh mengakses.
+checkAuth([1, 2]); 
 
 $page_title = "Laporan Kehadiran";
 $role_id = $_SESSION['id_role'] ?? 0;
@@ -13,11 +13,11 @@ $tahun_sekarang = date('Y');
 $kehadiran_list = [];
 $error = '';
 
-// Asumsi: Target hari kerja dalam sebulan (Bisa disesuaikan)
+// Target hari kerja dalam sebulan
 $target_kehadiran = 25; 
 
 try {
-    // QUERY PERBAIKAN (JOIN ke tabel KARYAWAN)
+    // QUERY PERBAIKAN: Hanya menghitung absensi valid (status_verifikasi = 'valid')
     $sql_kehadiran = "
         SELECT 
             u.id_user, 
@@ -26,7 +26,8 @@ try {
             (SELECT COUNT(a.id_absensi) 
              FROM absensi a 
              WHERE a.id_user = u.id_user 
-             AND MONTH(a.tanggal) = ? AND YEAR(a.tanggal) = ?) AS total_hadir
+             AND MONTH(a.tanggal) = ? AND YEAR(a.tanggal) = ?
+             AND a.status_verifikasi = 'valid') AS total_hadir
         FROM users u
         JOIN karyawan k ON u.id_user = k.id_user  -- JOIN WAJIB
         LEFT JOIN outlets o ON k.id_outlet = o.id_outlet -- Link outlet dari karyawan
@@ -70,12 +71,13 @@ include '../includes/header.php';
                             <th>Outlet Penempatan</th>
                             <th>Total Hadir</th>
                             <th width="30%">Performa Kehadiran</th>
+                            <th width="15%">Audit Presensi</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($kehadiran_list)): ?>
                             <tr>
-                                <td colspan="4" class="text-center py-4 text-muted">Belum ada data absensi pada periode ini.</td>
+                                <td colspan="5" class="text-center py-4 text-muted">Belum ada data absensi pada periode ini.</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($kehadiran_list as $k): 
@@ -116,6 +118,11 @@ include '../includes/header.php';
                                         </div>
                                     </div>
                                 </td>
+                                <td class="align-middle text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-primary btn-audit-absensi" data-user-id="<?php echo $k['id_user']; ?>" data-user-name="<?php echo htmlspecialchars($k['nama_lengkap']); ?>">
+                                        <i class="fas fa-camera me-1"></i> Audit Presensi
+                                    </button>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -125,6 +132,70 @@ include '../includes/header.php';
         </div>
     </div>
 </div>
+
+<!-- Modal Audit Presensi -->
+<div class="modal fade" id="modalAuditAbsensi" tabindex="-1" aria-labelledby="modalAuditAbsensiLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title font-weight-bold" id="modalAuditAbsensiLabel"><i class="fas fa-camera mr-2"></i> Audit Detail Presensi</h5>
+                <button type="button" class="close text-white btn-close btn-close-white" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body bg-light" id="modalAuditBody">
+                <div class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                    <p class="mt-2 text-muted">Memuat data absensi...</p>
+                </div>
+            </div>
+            <div class="modal-footer bg-white">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const auditButtons = document.querySelectorAll('.btn-audit-absensi');
+    const modalBody = document.getElementById('modalAuditBody');
+    const modalTitle = document.getElementById('modalAuditAbsensiLabel');
+
+    auditButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const userName = this.getAttribute('data-user-name');
+            
+            if (modalTitle) {
+                modalTitle.innerHTML = '<i class="fas fa-camera mr-2"></i> Audit Detail Presensi: ' + userName;
+            }
+            if (modalBody) {
+                modalBody.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-2 text-muted">Memuat data absensi...</p></div>';
+            }
+
+            const modalEl = document.getElementById('modalAuditAbsensi');
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                bsModal.show();
+            } else if (typeof $ !== 'undefined' && $.fn.modal) {
+                $('#modalAuditAbsensi').modal('show');
+            }
+
+            fetch('get_detail_absensi.php?id_user=' + userId)
+                .then(response => response.text())
+                .then(html => {
+                    if (modalBody) {
+                        modalBody.innerHTML = html;
+                    }
+                })
+                .catch(err => {
+                    if (modalBody) {
+                        modalBody.innerHTML = '<div class="alert alert-danger">Gagal memuat data detail absensi.</div>';
+                    }
+                });
+        });
+    });
+});
+</script>
 
 <?php 
 include '../includes/footer.php';
