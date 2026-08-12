@@ -327,20 +327,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- 4. FACE-API.JS & WEBCAM LOGIC ---
     async function loadModels() {
-        try {
-            const MODEL_URL = '../../assets/vendor/face-api/models';
-            await Promise.all([
-                faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-            ]);
-            modelsLoaded = true;
-            return true;
-        } catch (err) {
-            console.error("Error loading face-api models:", err);
-            updateFaceBadge(false, "Gagal Memuat Model Wajah");
-            return false;
+        if (modelsLoaded) return true;
+
+        const pathsToTry = [
+            '../../assets/vendor/face-api/models',
+            '../assets/vendor/face-api/models',
+            '/mending/assets/vendor/face-api/models',
+            'assets/vendor/face-api/models'
+        ];
+
+        for (let MODEL_URL of pathsToTry) {
+            try {
+                await Promise.all([
+                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                ]);
+                modelsLoaded = true;
+                console.log("Face-API models loaded successfully from:", MODEL_URL);
+                return true;
+            } catch (err) {
+                console.warn("Failed loading models from " + MODEL_URL + ":", err);
+            }
         }
+
+        updateFaceBadge(false, "Gagal Memuat Model Wajah");
+        return false;
     }
 
     async function startWebcam() {
