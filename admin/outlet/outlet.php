@@ -19,9 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $nama = trim($_POST['nama_outlet']);
         $alamat = trim($_POST['alamat']);
         $telp = trim($_POST['no_telp']);
+        $lat = !empty($_POST['latitude']) ? (float)$_POST['latitude'] : null;
+        $long = !empty($_POST['longitude']) ? (float)$_POST['longitude'] : null;
+        $radius = !empty($_POST['radius_meter']) ? (int)$_POST['radius_meter'] : 50;
         
-        $stmt = $conn->prepare("INSERT INTO outlets (nama_outlet, alamat, no_telp) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $nama, $alamat, $telp);
+        $stmt = $conn->prepare("INSERT INTO outlets (nama_outlet, alamat, no_telp, latitude, longitude, radius_meter) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssddi", $nama, $alamat, $telp, $lat, $long, $radius);
         
         if ($stmt->execute()) {
             echo "<script>
@@ -36,9 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $nama = trim($_POST['nama_outlet']);
         $alamat = trim($_POST['alamat']);
         $telp = trim($_POST['no_telp']);
+        $lat = !empty($_POST['latitude']) ? (float)$_POST['latitude'] : null;
+        $long = !empty($_POST['longitude']) ? (float)$_POST['longitude'] : null;
+        $radius = !empty($_POST['radius_meter']) ? (int)$_POST['radius_meter'] : 50;
         
-        $stmt = $conn->prepare("UPDATE outlets SET nama_outlet=?, alamat=?, no_telp=? WHERE id_outlet=?");
-        $stmt->bind_param("sssi", $nama, $alamat, $telp, $id);
+        $stmt = $conn->prepare("UPDATE outlets SET nama_outlet=?, alamat=?, no_telp=?, latitude=?, longitude=?, radius_meter=? WHERE id_outlet=?");
+        $stmt->bind_param("sssddii", $nama, $alamat, $telp, $lat, $long, $radius, $id);
         
         if ($stmt->execute()) {
             echo "<script>
@@ -112,7 +118,8 @@ $result = $conn->query($sql);
                     </div>
                     
                     <div class="small text-dark mb-1"><i class="fas fa-map-marker-alt text-danger w-15px"></i> <?php echo htmlspecialchars($row['alamat']); ?></div>
-                    <div class="small text-dark mb-3"><i class="fas fa-phone text-success w-15px"></i> <?php echo htmlspecialchars($row['no_telp']); ?></div>
+                    <div class="small text-dark mb-1"><i class="fas fa-phone text-success w-15px"></i> <?php echo htmlspecialchars($row['no_telp']); ?></div>
+                    <div class="small text-dark mb-3"><i class="fas fa-crosshairs text-info w-15px"></i> GPS: <?php echo ($row['latitude'] !== null && $row['latitude'] !== '' && $row['longitude'] !== null && $row['longitude'] !== '') ? htmlspecialchars($row['latitude'] . ', ' . $row['longitude']) : 'Belum set'; ?> (Radius: <?php echo (int)($row['radius_meter'] ?? 50); ?>m)</div>
                     
                     <div class="d-flex justify-content-between text-muted small mb-3 border-top pt-2">
                         <span><i class="fas fa-users"></i> <?php echo $row['total_karyawan']; ?> Staf</span>
@@ -126,7 +133,7 @@ $result = $conn->query($sql);
                         
                         <div class="d-flex gap-2">
                             <button class="btn btn-sm btn-outline-primary flex-fill" 
-                                    onclick="bukaModalEdit(<?php echo $row['id_outlet']; ?>, '<?php echo addslashes($row['nama_outlet']); ?>', '<?php echo addslashes($row['alamat']); ?>', '<?php echo addslashes($row['no_telp']); ?>')">
+                                    onclick="bukaModalEdit(<?php echo $row['id_outlet']; ?>, '<?php echo addslashes($row['nama_outlet']); ?>', '<?php echo addslashes($row['alamat']); ?>', '<?php echo addslashes($row['no_telp']); ?>', '<?php echo addslashes($row['latitude'] ?? ''); ?>', '<?php echo addslashes($row['longitude'] ?? ''); ?>', <?php echo (int)($row['radius_meter'] ?? 50); ?>)">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
                             <button class="btn btn-sm btn-outline-danger" 
@@ -163,9 +170,29 @@ $result = $conn->query($sql);
                         <label class="font-weight-bold">Nomor Telepon / WA</label>
                         <input type="text" name="no_telp" id="telpOutlet" class="form-control" placeholder="Akan tercetak di nota kasir">
                     </div>
-                    <div class="form-group mb-0">
+                    <div class="form-group mb-3">
                         <label class="font-weight-bold">Alamat Lengkap</label>
                         <textarea name="alamat" id="alamatOutlet" class="form-control" rows="3" placeholder="Alamat lengkap outlet..."></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-bold">Latitude (GPS)</label>
+                            <input type="text" name="latitude" id="latOutlet" class="form-control" placeholder="-7.250445">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="font-weight-bold">Longitude (GPS)</label>
+                            <input type="text" name="longitude" id="longOutlet" class="form-control" placeholder="112.768845">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">Radius Batas Absen (Meter)</label>
+                        <input type="number" name="radius_meter" id="radiusOutlet" class="form-control" value="50" min="5" max="500">
+                        <small class="text-muted">Karyawan wajib berada dalam radius ini dari titik GPS outlet saat absen.</small>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-info btn-sm w-100" onclick="getLokasiSaatIni()">
+                            <i class="fas fa-crosshairs me-1"></i> Gunakan Lokasi GPS Saya Saat Ini
+                        </button>
                     </div>
                 </div>
                 <div class="modal-footer bg-white">
@@ -186,6 +213,26 @@ $result = $conn->query($sql);
 <?php require_once '../../includes/footer.php'; ?>
 
 <script>
+    function getLokasiSaatIni() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                $('#latOutlet').val(position.coords.latitude.toFixed(8));
+                $('#longOutlet').val(position.coords.longitude.toFixed(8));
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Koordinat Diambil',
+                    text: `Lat: ${position.coords.latitude}, Long: ${position.coords.longitude}`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }, function(error) {
+                Swal.fire('Gagal GPS', 'Tidak bisa mengambil lokasi GPS. Pastikan izin lokasi aktif.', 'error');
+            });
+        } else {
+            Swal.fire('Error', 'Browser tidak mendukung Geolocation.', 'error');
+        }
+    }
+
     function bukaModalTambah() {
         $('#modalTitle').html('<i class="fas fa-store"></i> Tambah Outlet Baru');
         $('#aksiOutlet').val('tambah');
@@ -193,16 +240,22 @@ $result = $conn->query($sql);
         $('#namaOutlet').val('');
         $('#telpOutlet').val('');
         $('#alamatOutlet').val('');
+        $('#latOutlet').val('');
+        $('#longOutlet').val('');
+        $('#radiusOutlet').val('50');
         $('#modalOutlet').modal('show');
     }
 
-    function bukaModalEdit(id, nama, alamat, telp) {
+    function bukaModalEdit(id, nama, alamat, telp, lat, long, radius) {
         $('#modalTitle').html('<i class="fas fa-edit"></i> Edit Data Outlet');
         $('#aksiOutlet').val('edit');
         $('#idOutlet').val(id);
         $('#namaOutlet').val(nama);
         $('#alamatOutlet').val(alamat);
         $('#telpOutlet').val(telp);
+        $('#latOutlet').val(lat || '');
+        $('#longOutlet').val(long || '');
+        $('#radiusOutlet').val(radius || 50);
         $('#modalOutlet').modal('show');
     }
 
