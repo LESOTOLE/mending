@@ -301,16 +301,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
 
+        const canonicalUrl = '<?php echo BASE_URL; ?>../assets/vendor/face-api/models/';
         const pathName = window.location.pathname;
         const adminIdx = pathName.indexOf('/admin');
         const baseDir = (adminIdx !== -1) ? pathName.substring(0, adminIdx) : '';
         const absoluteModelUrl = window.location.origin + baseDir + '/assets/vendor/face-api/models/';
 
         const pathsToTry = [
+            canonicalUrl,
             absoluteModelUrl,
-            window.location.origin + '/mending/assets/vendor/face-api/models/',
-            '../assets/vendor/face-api/models/',
-            '../../assets/vendor/face-api/models/'
+            window.location.origin + '/mending/assets/vendor/face-api/models/'
         ];
 
         let lastErr = null;
