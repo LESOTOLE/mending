@@ -175,12 +175,7 @@ $role_name = $_SESSION['role_name'] ?? 'User';
         <?php if ($role_id == 3): ?>
             <li class="nav-item mt-2">
                 <a href="<?php echo $base_path; ?>staff/absen.php" class="nav-link text-dark <?php echo ($current_page == 'absen.php') ? 'active bg-white bg-opacity-25 rounded' : ''; ?>">
-                    <i class="fas fa-camera-retro fa-fw me-2"></i> Absen Wajah & GPS
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="<?php echo $base_path; ?>staff/absensi.php" class="nav-link text-dark <?php echo ($current_page == 'absensi.php') ? 'active bg-white bg-opacity-25 rounded' : ''; ?>">
-                    <i class="fas fa-fingerprint fa-fw me-2"></i> Absensi Harian
+                    <i class="fas fa-camera-retro fa-fw me-2"></i> Presensi Wajah & GPS
                 </a>
             </li>
             <li class="nav-item">

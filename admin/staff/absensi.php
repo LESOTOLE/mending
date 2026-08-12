@@ -1,8 +1,9 @@
 <?php
 require_once '../../includes/config.php';
 checkAuth([3]); // Pastikan hanya role Karyawan yang bisa akses
+header("Location: absen.php");
+exit;
 
-$conn = connectDB();
 $id_user = $_SESSION['id_user'];
 $today   = date('Y-m-d');
 $page_title = "Absensi Harian"; // Untuk title di header
