@@ -130,7 +130,7 @@ while ($row = $res_chart->fetch_assoc()) {
     </div>
 </div>
 
-<script src="/mending/assets/vendor/js/chart.js"></script>
+<script src="<?= ASSETS_URL ?>vendor/js/chart.js"></script>
 <script>
     const ctx = document.getElementById('revenueChart');
     if (ctx) {

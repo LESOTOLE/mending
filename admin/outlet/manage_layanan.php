@@ -38,11 +38,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     if ($aksi == 'tambah') {
         $nama = trim($_POST['nama_layanan']);
+        $kategori = trim($_POST['kategori'] ?? 'Cuci Kiloan');
+        if (empty($kategori)) $kategori = 'Cuci Kiloan';
         $harga = (float)$_POST['harga'];
         $satuan = trim($_POST['satuan']);
         
-        $stmt = $conn->prepare("INSERT INTO layanan (id_outlet, nama_layanan, harga, satuan) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isds", $id_outlet, $nama, $harga, $satuan);
+        $stmt = $conn->prepare("INSERT INTO layanan (id_outlet, nama_layanan, kategori, harga, satuan) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("issds", $id_outlet, $nama, $kategori, $harga, $satuan);
         
         if ($stmt->execute()) {
             echo "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire('Berhasil!', 'Layanan ditambahkan ke $nama_cabang.', 'success'); });</script>";
@@ -51,11 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     elseif ($aksi == 'edit') {
         $id_layanan = (int)$_POST['id_layanan'];
         $nama = trim($_POST['nama_layanan']);
+        $kategori = trim($_POST['kategori'] ?? 'Cuci Kiloan');
+        if (empty($kategori)) $kategori = 'Cuci Kiloan';
         $harga = (float)$_POST['harga'];
         $satuan = trim($_POST['satuan']);
         
-        $stmt = $conn->prepare("UPDATE layanan SET nama_layanan=?, harga=?, satuan=? WHERE id_layanan=? AND id_outlet=?");
-        $stmt->bind_param("sdsii", $nama, $harga, $satuan, $id_layanan, $id_outlet);
+        $stmt = $conn->prepare("UPDATE layanan SET nama_layanan=?, kategori=?, harga=?, satuan=? WHERE id_layanan=? AND id_outlet=?");
+        $stmt->bind_param("ssdsii", $nama, $kategori, $harga, $satuan, $id_layanan, $id_outlet);
         
         if ($stmt->execute()) {
             echo "<script>document.addEventListener('DOMContentLoaded', function() { Swal.fire('Tersimpan!', 'Layanan berhasil diupdate.', 'success'); });</script>";
@@ -98,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 // --- AMBIL DATA LAYANAN KHUSUS UNTUK CABANG INI SAJA ---
-$stmt_layanan = $conn->prepare("SELECT * FROM layanan WHERE id_outlet = ? ORDER BY nama_layanan ASC");
+$stmt_layanan = $conn->prepare("SELECT * FROM layanan WHERE id_outlet = ? ORDER BY kategori ASC, nama_layanan ASC");
 $stmt_layanan->bind_param("i", $id_outlet);
 $stmt_layanan->execute();
 $res_layanan = $stmt_layanan->get_result();
@@ -125,6 +129,7 @@ $res_layanan = $stmt_layanan->get_result();
                     <thead class="bg-light">
                         <tr>
                             <th width="5%">No</th>
+                            <th>Kategori</th>
                             <th>Nama Layanan</th>
                             <th>Harga</th>
                             <th>Satuan</th>
@@ -135,13 +140,14 @@ $res_layanan = $stmt_layanan->get_result();
                     <tbody>
                         <?php 
                         if ($res_layanan->num_rows == 0) {
-                            echo "<tr><td colspan='5' class='text-center text-danger font-weight-bold py-4'>Belum ada layanan di cabang ini. Silakan tambah baru!</td></tr>";
+                            echo "<tr><td colspan='7' class='text-center text-danger font-weight-bold py-4'>Belum ada layanan di cabang ini. Silakan tambah baru!</td></tr>";
                         }
                         $no=1; 
                         while($row = $res_layanan->fetch_assoc()): 
                         ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
+                            <td><span class="badge bg-secondary"><?php echo htmlspecialchars($row['kategori'] ?? 'Cuci Kiloan'); ?></span></td>
                             <td class="font-weight-bold"><?php echo htmlspecialchars($row['nama_layanan']); ?></td>
                             <td>Rp <?php echo number_format($row['harga'], 0, ',', '.'); ?></td>
                             <td>/ <?php echo $row['satuan']; ?></td>
@@ -163,7 +169,7 @@ $res_layanan = $stmt_layanan->get_result();
                             </td>
                             <td class="text-center">
                                 <button class="btn btn-sm btn-outline-primary" 
-                                        onclick="bukaModalEdit(<?php echo $row['id_layanan']; ?>, '<?php echo addslashes($row['nama_layanan']); ?>', <?php echo $row['harga']; ?>, '<?php echo $row['satuan']; ?>')">
+                                        onclick="bukaModalEdit(<?php echo $row['id_layanan']; ?>, '<?php echo addslashes($row['nama_layanan']); ?>', '<?php echo addslashes($row['kategori'] ?? 'Cuci Kiloan'); ?>', <?php echo $row['harga']; ?>, '<?php echo $row['satuan']; ?>')">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger" 
@@ -195,6 +201,22 @@ $res_layanan = $stmt_layanan->get_result();
                     
                     <div class="alert alert-info py-2" role="alert">
                         <i class="fas fa-info-circle me-1"></i> Data disimpan khusus untuk <b><?php echo htmlspecialchars($nama_cabang); ?></b>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold">Kategori Layanan <span class="text-danger">*</span></label>
+                        <input type="text" name="kategori" id="kategoriLayanan" class="form-control" list="kategoriOptionsOutlet" required placeholder="Contoh: Cuci Komplit, Express, Bedding...">
+                        <datalist id="kategoriOptionsOutlet">
+                            <option value="Cuci Komplit">
+                            <option value="Express & Kilat">
+                            <option value="Cuci Kiloan">
+                            <option value="Bedding & Sprei">
+                            <option value="Pakaian Satuan">
+                            <option value="Sepatu & Tas">
+                            <option value="Karpet & Gorden">
+                            <option value="Boneka & Sholat">
+                            <option value="Setrika Saja">
+                        </datalist>
                     </div>
 
                     <div class="form-group">
@@ -239,25 +261,27 @@ $res_layanan = $stmt_layanan->get_result();
 
 <?php require_once '../../includes/footer.php'; ?>
 
-<script src="/mending/assets/vendor/js/jquery-3.6.0.min.js"></script>
-<script src="/mending/assets/vendor/js/bootstrap.bundle.min.js"></script>
-<script src="/mending/assets/vendor/js/sweetalert2.all.min.js"></script>
+<script src="<?= ASSETS_URL ?>vendor/js/jquery-3.6.0.min.js"></script>
+<script src="<?= ASSETS_URL ?>vendor/js/bootstrap.bundle.min.js"></script>
+<script src="<?= ASSETS_URL ?>vendor/js/sweetalert2.all.min.js"></script>
 
 <script>
     function bukaModalTambah() {
         $('#modalTitle').html('<i class="fas fa-plus-circle"></i> Tambah Layanan Baru');
         $('#aksiLayanan').val('tambah');
         $('#idLayanan').val('');
+        $('#kategoriLayanan').val('Cuci Kiloan');
         $('#namaLayanan').val('');
         $('#hargaLayanan').val('');
         $('#satuanLayanan').val('kg');
         $('#modalLayanan').modal('show');
     }
 
-    function bukaModalEdit(id_layanan, nama, harga, satuan) {
+    function bukaModalEdit(id_layanan, nama, kategori, harga, satuan) {
         $('#modalTitle').html('<i class="fas fa-edit"></i> Edit Layanan');
         $('#aksiLayanan').val('edit');
         $('#idLayanan').val(id_layanan);
+        $('#kategoriLayanan').val(kategori || 'Cuci Kiloan');
         $('#namaLayanan').val(nama);
         $('#hargaLayanan').val(harga);
         $('#satuanLayanan').val(satuan);

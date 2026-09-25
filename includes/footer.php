@@ -45,15 +45,15 @@ function initSidebarToggle() {
 }
 </script>
 
-<script src="/mending/assets/vendor/js/jquery-3.6.0.min.js"></script>
-<script src="/mending/assets/vendor/js/sweetalert2.all.min.js"></script>
-<script src="/mending/assets/vendor/js/bootstrap.bundle.min.js" 
+<script>if (typeof window.jQuery === 'undefined') { document.write('<script src="<?= ASSETS_URL ?>vendor/js/jquery-3.6.0.min.js"><\/script>'); }</script>
+<script>if (typeof window.Swal === 'undefined') { document.write('<script src="<?= ASSETS_URL ?>vendor/js/sweetalert2.all.min.js"><\/script>'); }</script>
+<script src="<?= ASSETS_URL ?>vendor/js/bootstrap.bundle.min.js" 
         onload="initSidebarToggle();"></script>
 
 <!-- AOS Animation JS -->
-<script src="/mending/assets/vendor/js/aos.js"></script>
+<script src="<?= ASSETS_URL ?>vendor/js/aos.js"></script>
 <!-- Custom Animations JS -->
-<script src="/mending/assets/js/animations.js"></script>
+<script src="<?= ASSETS_URL ?>js/animations.js"></script>
 
 </body>
 </html>

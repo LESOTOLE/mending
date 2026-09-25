@@ -69,8 +69,7 @@ $role_name = $_SESSION['role_name'] ?? 'User';
     }
 </style>
 
-<div class="sidebar p-3 d-flex flex-column text-dark shadow"
-    style="height: 100vh; position: sticky; top: 0; z-index: 1000; width: 250px;">
+<div class="sidebar p-3 d-flex flex-column text-dark shadow">
 
     <a href="<?php echo $base_path; ?>dashboard.php" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none justify-content-center flex-shrink-0">
         <i class="fas fa-tshirt fa-2x me-2"></i>
@@ -192,7 +191,7 @@ $role_name = $_SESSION['role_name'] ?? 'User';
 
     <div class="dropdown flex-shrink-0">
         <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle p-2 rounded hover-bg" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(255, 255, 255, 1);">
-            <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['nama_lengkap'] ?? 'U'); ?>&background=random&color=fff" onerror="this.onerror=null;this.src='/mending/assets/vendor/img/default-avatar.png';" alt="" width="32" height="32" class="rounded-circle me-2 border border-2 border-white">
+            <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['nama_lengkap'] ?? 'U'); ?>&background=random&color=fff" onerror="this.onerror=null;this.src='<?= ASSETS_URL ?>vendor/img/default-avatar.png';" alt="" width="32" height="32" class="rounded-circle me-2 border border-2 border-white">
             <div class="text-truncate" style="max-width: 100px;">
                 <strong class="small"><?php echo explode(' ', $_SESSION['nama_lengkap'] ?? 'User')[0]; ?></strong>
             </div>

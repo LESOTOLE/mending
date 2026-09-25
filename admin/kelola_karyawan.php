@@ -142,28 +142,30 @@ endif;
                             </td>
                             
                             <td>
-                                <button type="button" 
-                                        class="btn btn-sm btn-primary btn-daftar-wajah me-1 mb-1" 
-                                        data-user-id="<?php echo $k['id_user']; ?>" 
-                                        data-user-name="<?php echo htmlspecialchars($k['nama_lengkap']); ?>"
-                                        data-has-face="<?php echo !empty($k['face_descriptor']) ? '1' : '0'; ?>">
-                                    <i class="fas fa-camera me-1"></i> <?php echo !empty($k['face_descriptor']) ? 'Update Wajah' : 'Daftar Wajah'; ?>
-                                </button>
-
-                                <a href="staff/edit_user.php?id=<?php echo $k['id_user']; ?>&ref=kelola_karyawan" class="btn btn-sm btn-info text-white me-1 mb-1"><i class="fas fa-edit"></i></a>
-                                
-                                <form class="form-delete" method="POST" action="staff/proses_user.php" style="display:inline-block;">
-                                    <?php echo csrfField(); ?>
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="id_user" value="<?php echo $k['id_user']; ?>">
-                                    
+                                <div class="btn-group-action">
                                     <button type="button" 
-                                            class="btn btn-sm btn-danger btn-delete-confirm mb-1" 
-                                            data-user-id="<?php echo $k['id_user']; ?>"
-                                            data-user-name="<?php echo htmlspecialchars($k['nama_lengkap']); ?>">
-                                        <i class="fas fa-trash-alt"></i>
+                                            class="btn btn-sm btn-primary btn-daftar-wajah" 
+                                            data-user-id="<?php echo $k['id_user']; ?>" 
+                                            data-user-name="<?php echo htmlspecialchars($k['nama_lengkap']); ?>"
+                                            data-has-face="<?php echo !empty($k['face_descriptor']) ? '1' : '0'; ?>">
+                                        <i class="fas fa-camera me-1"></i> <?php echo !empty($k['face_descriptor']) ? 'Update Wajah' : 'Daftar Wajah'; ?>
                                     </button>
-                                </form>
+
+                                    <a href="staff/edit_user.php?id=<?php echo $k['id_user']; ?>&ref=kelola_karyawan" class="btn btn-sm btn-info text-white"><i class="fas fa-edit"></i></a>
+                                    
+                                    <form class="form-delete m-0" method="POST" action="staff/proses_user.php" style="display:inline-block;">
+                                        <?php echo csrfField(); ?>
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="id_user" value="<?php echo $k['id_user']; ?>">
+                                        
+                                        <button type="button" 
+                                                class="btn btn-sm btn-danger btn-delete-confirm" 
+                                                data-user-id="<?php echo $k['id_user']; ?>"
+                                                data-user-name="<?php echo htmlspecialchars($k['nama_lengkap']); ?>">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -301,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
 
-        const canonicalUrl = '<?php echo BASE_URL; ?>../assets/vendor/face-api/models/';
+        const canonicalUrl = '<?php echo ASSETS_URL; ?>vendor/face-api/models/';
         const pathName = window.location.pathname;
         const adminIdx = pathName.indexOf('/admin');
         const baseDir = (adminIdx !== -1) ? pathName.substring(0, adminIdx) : '';
@@ -309,8 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const pathsToTry = [
             canonicalUrl,
-            absoluteModelUrl,
-            window.location.origin + '/mending/assets/vendor/face-api/models/'
+            absoluteModelUrl
         ];
 
         let lastErr = null;

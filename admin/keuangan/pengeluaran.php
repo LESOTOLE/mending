@@ -67,7 +67,7 @@ function formatRupiah($angka) {
 include '../../includes/header.php'; 
 ?>
 
-<link href="/mending/assets/vendor/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="<?= ASSETS_URL ?>vendor/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 
 <div class="container-fluid">
     <h3 class="mb-4 text-primary fw-bold"><i class="fas fa-hand-holding-usd me-2"></i>Manajemen Pengeluaran</h3>
@@ -175,8 +175,8 @@ include 'modal_tambah_pengeluaran.php';
 include '../../includes/footer.php'; 
 ?>
 
-<script src="/mending/assets/vendor/js/jquery.dataTables.min.js"></script>
-<script src="/mending/assets/vendor/js/dataTables.bootstrap5.min.js"></script>
+<script src="<?= ASSETS_URL ?>vendor/js/jquery.dataTables.min.js"></script>
+<script src="<?= ASSETS_URL ?>vendor/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

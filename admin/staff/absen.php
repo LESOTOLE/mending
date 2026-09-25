@@ -114,15 +114,30 @@ include '../../includes/header.php';
                             <!-- Canvas Face Detection Overlay -->
                             <canvas id="faceCanvas" class="position-absolute top-0 start-0 w-100 h-100" style="pointer-events: none;"></canvas>
                             
-                            <!-- Circular Face Guide Overlay -->
-                            <div class="position-absolute top-50 start-50 translate-middle pointer-events-none d-flex align-items-center justify-content-center" style="width: 210px; height: 210px;">
+                            <!-- Circular Face Guide Overlay — responsif: 55% lebar, max 210px -->
+                            <div class="position-absolute top-50 start-50 translate-middle pointer-events-none d-flex align-items-center justify-content-center" style="width: 55%; max-width: 210px; aspect-ratio: 1/1;">
                                 <div id="guideRing" class="w-100 h-100 rounded-circle border border-3 border-white opacity-75" style="box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45); transition: border-color 0.3s ease;">
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Progress Bar Model Loading (muncul saat model belum siap) -->
+                        <div id="modelLoadingBar" class="mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted fw-semibold" id="modelLoadingText">
+                                    <i class="fas fa-spinner fa-spin me-1"></i> Memuat model AI wajah...
+                                </small>
+                                <small class="text-muted" id="modelLoadingStep">0/3</small>
+                            </div>
+                            <div class="progress" style="height: 6px; border-radius: 999px;">
+                                <div id="modelProgressBar" class="progress-bar bg-primary progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" style="width: 0%; transition: width 0.4s ease;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Status Badges Grid -->
-                        <div class="row g-2 mt-3 text-center">
+                        <div class="row g-2 mt-2 text-center">
                             <div class="col-6">
                                 <div id="badgeGpsContainer">
                                     <span id="badgeGps" class="badge bg-secondary w-100 p-2 text-wrap fw-normal" style="font-size: 12px;">
@@ -147,6 +162,7 @@ include '../../includes/header.php';
                 </div>
 
                 <!-- Form Action Button -->
+
                 <form id="formAbsen" action="../proses_absensi.php" method="POST">
                     <?php echo csrfField(); ?>
                     <input type="hidden" name="action" value="<?php echo ($status_absen === 'belum_masuk') ? 'masuk' : 'pulang'; ?>">
@@ -334,28 +350,68 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
 
-        const canonicalUrl = '<?php echo BASE_URL; ?>../assets/vendor/face-api/models/';
+        const canonicalUrl = '<?php echo ASSETS_URL; ?>vendor/face-api/models/';
         const pathName = window.location.pathname;
         const adminIdx = pathName.indexOf('/admin');
         const baseDir = (adminIdx !== -1) ? pathName.substring(0, adminIdx) : '';
         const absoluteModelUrl = window.location.origin + baseDir + '/assets/vendor/face-api/models/';
 
-        const pathsToTry = [
-            canonicalUrl,
-            absoluteModelUrl,
-            window.location.origin + '/mending/assets/vendor/face-api/models/'
-        ];
+        // Coba canonicalUrl dulu, fallback ke absoluteModelUrl
+        const pathsToTry = [ canonicalUrl, absoluteModelUrl ];
+
+        // Helper: update progress bar & teks langkah
+        function setProgress(step, total, label) {
+            const bar  = document.getElementById('modelProgressBar');
+            const text = document.getElementById('modelLoadingText');
+            const step_el = document.getElementById('modelLoadingStep');
+            if (bar)  { bar.style.width = Math.round((step / total) * 100) + '%'; }
+            if (text) { text.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i> ${label}`; }
+            if (step_el) { step_el.textContent = step + '/' + total; }
+        }
+
+        function hideProgressBar() {
+            const el = document.getElementById('modelLoadingBar');
+            if (el) { el.style.display = 'none'; }
+        }
+
+        // Integrasi browser cache
+        if (typeof caches !== 'undefined' && faceapi.env) {
+            const originalFetch = faceapi.env.monkeyPatch().fetch || fetch;
+            faceapi.env.monkeyPatch({
+                fetch: async (url, options) => {
+                    const cache = await caches.open('face-api-models');
+                    const cachedResponse = await cache.match(url);
+                    if (cachedResponse) {
+                        return cachedResponse;
+                    }
+                    const networkResponse = await originalFetch(url, options);
+                    if (networkResponse.ok) {
+                        cache.put(url, networkResponse.clone());
+                    }
+                    return networkResponse;
+                }
+            });
+        }
 
         let lastErr = null;
         for (let MODEL_URL of pathsToTry) {
             try {
-                await Promise.all([
-                    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-                ]);
+                // Muat satu per satu agar bisa update progres
+                setProgress(0, 3, 'Memuat model deteksi wajah... (1/3)');
+                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+
+                setProgress(1, 3, 'Memuat model landmark wajah... (2/3)');
+                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+
+                setProgress(2, 3, 'Memuat model pengenalan wajah... (3/3)');
+                await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+
+                setProgress(3, 3, 'Model siap!');
                 modelsLoaded = true;
                 console.log("Face-API models loaded successfully from:", MODEL_URL);
+
+                // Sembunyikan progress bar setelah 800ms
+                setTimeout(hideProgressBar, 800);
                 return true;
             } catch (err) {
                 lastErr = err;
@@ -365,6 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const errDetail = lastErr ? (lastErr.message || String(lastErr)) : 'Gagal fetch model';
         updateFaceBadge(false, "Gagal Memuat Model (" + errDetail + ")");
+        hideProgressBar();
         return false;
     }
 
@@ -412,11 +469,18 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        detectInterval = setInterval(async () => {
+        detectInterval = null;
+        let isDetecting = false;
+
+        const loopDetection = async () => {
             if (!stream || video.paused || video.ended) return;
+            if (isDetecting) return;
+            isDetecting = true;
+            
+            let currentInterval = 400;
 
             try {
-                const detection = await faceapi.detectSingleFace(video)
+                const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
                     .withFaceLandmarks()
                     .withFaceDescriptor();
 
@@ -433,6 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (distance <= 0.6) {
                         isFaceValid = true;
                         updateFaceBadge(true, `Wajah Match (${distance.toFixed(2)})`);
+                        currentInterval = 800;
                     } else {
                         isFaceValid = false;
                         updateFaceBadge(false, `Wajah Beda (${distance.toFixed(2)})`);
@@ -444,22 +509,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkValidationState();
             } catch (err) {
                 console.error("Face detection interval error:", err);
+            } finally {
+                isDetecting = false;
+                detectInterval = setTimeout(loopDetection, currentInterval);
             }
-        }, 300);
+        };
+        
+        loopDetection();
     }
 
-    // --- 5. INITIALIZATION ---
+    // --- 5. INITIALIZATION — Webcam & Model dimuat PARALEL agar lebih cepat ---
     initGeolocation();
 
-    loadModels().then(loaded => {
-        if (loaded) {
-            startWebcam().then(camOk => {
-                if (camOk) {
-                    startFaceDetectionLoop();
-                }
-            });
+    // Jalankan loadModels dan startWebcam secara bersamaan (paralel)
+    Promise.all([loadModels(), startWebcam()]).then(([loaded, camOk]) => {
+        if (loaded && camOk) {
+            startFaceDetectionLoop();
+        } else if (!loaded) {
+            // Model gagal, tidak perlu start deteksi
+            console.error("Model wajah gagal dimuat, absensi tidak dapat dilanjutkan.");
         }
     });
+
 
     // --- 6. CAPTURE SNAPSHOT BEFORE SUBMIT ---
     const formAbsen = document.getElementById('formAbsen');
@@ -469,11 +540,23 @@ document.addEventListener('DOMContentLoaded', function() {
             const fotoInput = document.getElementById('fotoBase64');
             if (video && fotoInput) {
                 const snapCanvas = document.createElement('canvas');
-                snapCanvas.width = video.videoWidth || 640;
-                snapCanvas.height = video.videoHeight || 480;
+                let width = video.videoWidth || 640;
+                let height = video.videoHeight || 480;
+                
+                if (width > 640) {
+                    height = Math.round((height * 640) / width);
+                    width = 640;
+                }
+                if (height > 480) {
+                    width = Math.round((width * 480) / height);
+                    height = 480;
+                }
+                
+                snapCanvas.width = width;
+                snapCanvas.height = height;
                 const ctx = snapCanvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
-                fotoInput.value = snapCanvas.toDataURL('image/jpeg', 0.85);
+                fotoInput.value = snapCanvas.toDataURL('image/jpeg', 0.7);
             }
         });
     }

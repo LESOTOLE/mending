@@ -57,16 +57,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Tangkap Data Karyawan Utama
     $nama_lengkap  = trim($_POST['nama_lengkap']);
-    $id_outlet     = (int)$_POST['outlet_id'];
-    $no_hp         = trim($_POST['no_telepon']);
-    $jenis_kelamin = trim($_POST['jenis_kelamin']); // Tangkap Jenis Kelamin
-    $alamat        = trim($_POST['alamat']);
-    $tgl_gabung    = $_POST['tanggal_bergabung'];
+    $id_outlet     = (int)($_POST['outlet_id'] ?? 0);
+    $no_hp         = trim($_POST['no_telepon'] ?? '');
+    $jenis_kelamin = trim($_POST['jenis_kelamin'] ?? ''); // Tangkap Jenis Kelamin
+    $alamat        = trim($_POST['alamat'] ?? '');
+    $tgl_gabung    = $_POST['tanggal_bergabung'] ?? date('Y-m-d');
 
     // Tangkap Data Administratif & Bank
-    $nik_ktp      = trim($_POST['nik_ktp']);
-    $nama_bank    = trim($_POST['nama_bank']);
-    $no_rekening  = trim($_POST['no_rekening']);
+    $nik_ktp      = trim($_POST['nik_ktp'] ?? '');
+    $nama_bank    = trim($_POST['nama_bank'] ?? '');
+    $no_rekening  = trim($_POST['no_rekening'] ?? '');
 
     try {
         // VALIDASI 1: Cek apakah User yang login BERHAK membuat role ini?
@@ -101,6 +101,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if (!$stmt1->execute()) throw new Exception("Gagal membuat user login: " . $stmt1->error);
         $new_id_user = $conn->insert_id;
+
+        // JIKA ADMIN OUTLET, buat record outlet otomatis
+        if ($target_role == 4) {
+            $stmt_out = $conn->prepare("INSERT INTO outlets (nama_outlet) VALUES (?)");
+            $stmt_out->bind_param("s", $nama_lengkap);
+            if (!$stmt_out->execute()) throw new Exception("Gagal membuat cabang outlet: " . $stmt_out->error);
+            $id_outlet = $conn->insert_id;
+        }
 
         // 2. INSERT karyawan (TAMBAH jenis_kelamin ke query)
         $stmt2 = $conn->prepare("INSERT INTO karyawan (id_user, id_outlet, nama_lengkap, no_hp, jenis_kelamin, alamat, tanggal_bergabung, nik_ktp, nama_bank, no_rekening) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -199,15 +207,15 @@ include '../../includes/header.php';
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label class="font-weight-bold">Nama Lengkap (Sesuai KTP)*</label>
+                            <label class="font-weight-bold">Nama Lengkap / Nama Akun*</label>
                             <input type="text" name="nama_lengkap" class="form-control" required>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-6" id="outlet_col">
                                 <div class="form-group">
                                     <label class="font-weight-bold">Penempatan Outlet*</label>
-                                    <select name="outlet_id" class="form-control" required>
+                                    <select name="outlet_id" id="outlet_dropdown" class="form-control" required>
                                         <option value="">-- Pilih Cabang --</option>
                                         <?php foreach ($outlet_list as $o): ?>
                                             <option value="<?php echo $o['id_outlet']; ?>"><?php echo $o['nama_outlet']; ?></option>
@@ -215,7 +223,7 @@ include '../../includes/header.php';
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6" id="tgl_bergabung_col">
                                 <div class="form-group">
                                     <label class="font-weight-bold">Tanggal Bergabung</label>
                                     <input type="date" name="tanggal_bergabung" class="form-control" value="<?php echo date('Y-m-d'); ?>">
@@ -223,6 +231,7 @@ include '../../includes/header.php';
                             </div>
                         </div>
 
+                        <div id="biodata_extra">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -275,6 +284,7 @@ include '../../includes/header.php';
                                 </div>
                             </div>
                         </div>
+                        </div>
 
                         <hr>
                         <button type="submit" class="btn btn-success btn-block btn-lg shadow mt-4">
@@ -291,27 +301,47 @@ include '../../includes/header.php';
         const roleSelect = document.getElementById('role_id');
         const pinGroup = document.getElementById('pin_group');
         const pinInput = document.getElementById('pin_transaksi');
+        const tglBergabungCol = document.getElementById('tgl_bergabung_col');
+        const biodataExtra = document.getElementById('biodata_extra');
+        const outletCol = document.getElementById('outlet_col');
+        const outletDropdown = document.getElementById('outlet_dropdown');
 
-        function togglePinVisibility() {
-            // Asumsi ID Role untuk HRD adalah 2
+        function toggleVisibility() {
+            // Asumsi ID Role untuk HRD adalah 2, Admin Outlet adalah 4
             if (roleSelect.value === "2" || roleSelect.value === "4") {
                 // Sembunyikan bagian PIN dan matikan fungsi 'required'
                 pinGroup.style.display = 'none';
                 pinInput.removeAttribute('required');
                 pinInput.value = ''; // Kosongkan isinya
             } else {
-                // Munculkan kembali jika bukan HRD
+                // Munculkan kembali jika bukan HRD / Admin Outlet
                 pinGroup.style.display = 'block';
                 pinInput.setAttribute('required', 'required');
+            }
+            
+            // Khusus Admin Outlet (4), sembunyikan Detail Biodata dan Outlet Dropdown
+            if (roleSelect.value === "4") {
+                if (tglBergabungCol) tglBergabungCol.style.display = 'none';
+                if (biodataExtra) biodataExtra.style.display = 'none';
+                if (outletCol) outletCol.style.display = 'none';
+                if (outletDropdown) {
+                    outletDropdown.removeAttribute('required');
+                    outletDropdown.value = '';
+                }
+            } else {
+                if (tglBergabungCol) tglBergabungCol.style.display = 'block';
+                if (biodataExtra) biodataExtra.style.display = 'block';
+                if (outletCol) outletCol.style.display = 'block';
+                if (outletDropdown) outletDropdown.setAttribute('required', 'required');
             }
         }
 
         // Jalankan saat halaman pertama kali dimuat
         if (roleSelect) {
-            togglePinVisibility();
+            toggleVisibility();
 
             // Pantau perubahan saat user memilih role lain
-            roleSelect.addEventListener('change', togglePinVisibility);
+            roleSelect.addEventListener('change', toggleVisibility);
         }
     });
 </script>

@@ -1,0 +1,14 @@
+# Cache model face-api di browser selama 30 hari
+# Setelah kunjungan pertama, loading model akan instan dari cache lokal
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType application/octet-stream "access plus 30 days"
+    ExpiresByType application/json "access plus 30 days"
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(json|bin|dat|shard1|shard2)$">
+        Header set Cache-Control "public, max-age=2592000, immutable"
+    </FilesMatch>
+</IfModule>

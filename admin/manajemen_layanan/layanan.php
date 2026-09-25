@@ -30,8 +30,15 @@ $sql = "SELECT l.*, o.nama_outlet
         FROM layanan l 
         JOIN outlets o ON l.id_outlet = o.id_outlet 
         $where_clause
-        ORDER BY o.nama_outlet ASC, l.nama_layanan ASC";
+        ORDER BY o.nama_outlet ASC, l.kategori ASC, l.nama_layanan ASC";
 $result = $conn->query($sql);
+
+// Ambil daftar kategori unik untuk datalist
+$kategori_options = [];
+$res_kat = $conn->query("SELECT DISTINCT kategori FROM layanan WHERE kategori IS NOT NULL AND kategori != '' ORDER BY kategori ASC");
+while ($r_k = $res_kat->fetch_assoc()) {
+    $kategori_options[] = $r_k['kategori'];
+}
 
 include '../../includes/header.php';
 ?>
@@ -80,6 +87,7 @@ include '../../includes/header.php';
                     <thead class="bg-primary text-white">
                         <tr>
                             <th>Cabang</th>
+                            <th>Kategori</th>
                             <th>Nama Layanan</th>
                             <th>Satuan</th>
                             <th>Harga</th>
@@ -90,13 +98,14 @@ include '../../includes/header.php';
                     <tbody>
                         <?php if ($result->num_rows == 0): ?>
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">Belum ada layanan di cabang ini.</td>
+                                <td colspan="7" class="text-center text-muted py-4">Belum ada layanan di cabang ini.</td>
                             </tr>
                         <?php endif; ?>
 
                         <?php while ($row = $result->fetch_assoc()): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['nama_outlet']); ?></td>
+                                <td><span class="badge bg-secondary"><?php echo htmlspecialchars($row['kategori'] ?? 'Cuci Kiloan'); ?></span></td>
                                 <td class="fw-bold"><?php echo htmlspecialchars($row['nama_layanan']); ?></td>
                                 <td><span class="badge bg-info text-dark"><?php echo $row['satuan']; ?></span></td>
                                 <td>Rp <?php echo number_format($row['harga'], 0, ',', '.'); ?></td>
@@ -144,8 +153,26 @@ include '../../includes/header.php';
                         </select>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label small fw-bold text-gray-800">Kategori Layanan*</label>
+                        <input type="text" name="kategori" id="f_kategori" class="form-control shadow-sm" list="kategoriListOptions" required placeholder="Contoh: Cuci Komplit, Express, Bedding, Satuan...">
+                        <datalist id="kategoriListOptions">
+                            <?php foreach ($kategori_options as $katName): ?>
+                                <option value="<?php echo htmlspecialchars($katName); ?>">
+                            <?php endforeach; ?>
+                            <option value="Cuci Komplit">
+                            <option value="Express & Kilat">
+                            <option value="Cuci Kiloan">
+                            <option value="Bedding & Sprei">
+                            <option value="Pakaian Satuan">
+                            <option value="Sepatu & Tas">
+                            <option value="Karpet & Gorden">
+                            <option value="Boneka & Sholat">
+                            <option value="Setrika Saja">
+                        </datalist>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label small fw-bold text-gray-800">Nama Layanan*</label>
-                        <input type="text" name="nama_layanan" id="f_nama" class="form-control shadow-sm" required placeholder="Contoh: Cuci Komplit">
+                        <input type="text" name="nama_layanan" id="f_nama" class="form-control shadow-sm" required placeholder="Contoh: Cuci Komplit - Reguler">
                     </div>
                     <div class="row">
                         <div class="col-6 mb-3">
@@ -226,7 +253,7 @@ include '../../includes/header.php';
     </div>
 </div>
 
-<script src="/mending/assets/vendor/js/sweetalert2.all.min.js"></script>
+<script src="<?= ASSETS_URL ?>vendor/js/sweetalert2.all.min.js"></script>
 <script>
     function prepareModal(action, data = null) {
         const title = document.getElementById('modalTitle');
@@ -236,11 +263,13 @@ include '../../includes/header.php';
             title.innerHTML = '<i class="fas fa-plus-circle me-2"></i> Tambah Layanan Baru';
             formAction.value = 'create';
             document.getElementById('formLayanan').reset();
+            document.getElementById('f_kategori').value = 'Cuci Kiloan';
         } else {
             title.innerHTML = '<i class="fas fa-edit me-2"></i> Edit Layanan';
             formAction.value = 'update';
             document.getElementById('layananId').value = data.id_layanan;
             document.getElementById('f_outlet').value = data.id_outlet;
+            document.getElementById('f_kategori').value = data.kategori || 'Cuci Kiloan';
             document.getElementById('f_nama').value = data.nama_layanan;
             document.getElementById('f_satuan').value = data.satuan;
             document.getElementById('f_harga').value = data.harga;

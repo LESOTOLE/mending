@@ -395,7 +395,7 @@ include '../../includes/header.php';
 <?php include '../../includes/footer.php'; ?>
 
 
-<script src="/mending/assets/vendor/js/chart.js"></script>
+<script src="<?= ASSETS_URL ?>vendor/js/chart.js"></script>
 
 <script>
     function toggleFilter(val) {

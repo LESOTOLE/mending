@@ -16,6 +16,7 @@ $sql = "SELECT t.*,
         LEFT JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
         WHERE t.id_transaksi = ?";
 
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $id);
 $stmt->execute();
@@ -121,9 +122,15 @@ $items = $stmt_d->get_result();
                 <td class="text-right">: <?php echo $trx['no_invoice']; ?></td>
             </tr>
             <tr>
-                <td>Tgl</td>
+                <td>Masuk</td>
                 <td class="text-right">: <?php echo date('d/m/y H:i', strtotime($trx['tgl_masuk'])); ?></td>
             </tr>
+            <?php if (!empty($trx['estimasi_selesai'])): ?>
+            <tr>
+                <td class="bold">Est. Selesai</td>
+                <td class="text-right bold">: <?php echo date('d/m/y H:i', strtotime($trx['estimasi_selesai'])); ?></td>
+            </tr>
+            <?php endif; ?>
             <tr>
                 <td>Kasir</td>
                 <td class="text-right">: <?php echo explode(' ', $trx['nama_kasir'])[0]; ?></td>
@@ -169,6 +176,12 @@ $items = $stmt_d->get_result();
             <tr>
                 <td>Diskon</td>
                 <td class="text-right">-Rp <?php echo number_format($trx['diskon'], 0, ',', '.'); ?></td>
+            </tr>
+            <?php endif; ?>
+            <?php if (isset($trx['pembulatan']) && (float)$trx['pembulatan'] != 0): ?>
+            <tr>
+                <td>Pembulatan Cash</td>
+                <td class="text-right"><?php echo ((float)$trx['pembulatan'] > 0 ? '+' : '') . 'Rp ' . number_format($trx['pembulatan'], 0, ',', '.'); ?></td>
             </tr>
             <?php endif; ?>
             <tr>

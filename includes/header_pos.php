@@ -6,10 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title><?php echo $page_title ?? APP_NAME; ?></title>
 
-    <link href="/mending/assets/vendor/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/mending/assets/vendor/css/all.min.css">
+    <link href="<?= ASSETS_URL ?>vendor/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?= ASSETS_URL ?>vendor/css/all.min.css">
     
-    <link rel="stylesheet" href="/mending/assets/vendor/css/sweetalert2.min.css">
+    <link rel="stylesheet" href="<?= ASSETS_URL ?>vendor/css/sweetalert2.min.css">
+
+    <script src="<?= ASSETS_URL ?>vendor/js/jquery-3.6.0.min.js"></script>
+    <script src="<?= ASSETS_URL ?>vendor/js/sweetalert2.all.min.js"></script>
 
     <style>
         /* CSS Khusus Header POS */
@@ -87,7 +90,7 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 // Arahkan ke file logout asli
-                window.location.href = '../../admin/logout.php';
+                window.location.href = '<?= BASE_URL ?>logout.php';
             }
         })
     }

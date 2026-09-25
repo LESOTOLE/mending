@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Struktur Database - Mending Laundry</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12pt;
+            margin: 40px;
+            color: #000;
+        }
+        h2 {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-top: 24px;
+            margin-bottom: 6px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 6px 10px;
+            text-align: left;
+            font-size: 11pt;
+        }
+        th {
+            background-color: #D9E1F2;
+            font-weight: bold;
+            text-align: center;
+        }
+        td:first-child {
+            text-align: center;
+            width: 4%;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Tabel 4.1 Tabel roles</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_role</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>nama_role</td><td>VARCHAR</td><td>50</td><td>Nama level akses</td></tr>
+</table>
+
+<h2>Tabel 4.2 Tabel users</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_user</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>username</td><td>VARCHAR</td><td>100</td><td>Username login, Unique</td></tr>
+    <tr><td>3</td><td>password</td><td>VARCHAR</td><td>255</td><td>Password terenkripsi (bcrypt)</td></tr>
+    <tr><td>4</td><td>pin</td><td>VARCHAR</td><td>10</td><td>PIN 6 digit otorisasi kasir</td></tr>
+    <tr><td>5</td><td>is_active</td><td>TINYINT</td><td>1</td><td>Status akun (1=Aktif, 0=Nonaktif)</td></tr>
+    <tr><td>6</td><td>id_role</td><td>INT</td><td>-</td><td>Foreign Key → roles(id_role)</td></tr>
+</table>
+
+<h2>Tabel 4.3 Tabel outlets</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_outlet</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>nama_outlet</td><td>VARCHAR</td><td>100</td><td>Nama cabang outlet</td></tr>
+    <tr><td>3</td><td>alamat</td><td>TEXT</td><td>-</td><td>Alamat lengkap outlet</td></tr>
+    <tr><td>4</td><td>no_telp</td><td>VARCHAR</td><td>20</td><td>Nomor telepon outlet</td></tr>
+    <tr><td>5</td><td>latitude</td><td>DOUBLE</td><td>-</td><td>Koordinat GPS lintang</td></tr>
+    <tr><td>6</td><td>longitude</td><td>DOUBLE</td><td>-</td><td>Koordinat GPS bujur</td></tr>
+    <tr><td>7</td><td>radius_meter</td><td>INT</td><td>-</td><td>Radius toleransi absensi (meter)</td></tr>
+</table>
+
+<h2>Tabel 4.4 Tabel karyawan</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_karyawan</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>id_user</td><td>INT</td><td>-</td><td>Foreign Key → users(id_user), Unique</td></tr>
+    <tr><td>3</td><td>id_outlet</td><td>INT</td><td>-</td><td>Foreign Key → outlets(id_outlet)</td></tr>
+    <tr><td>4</td><td>nama_lengkap</td><td>VARCHAR</td><td>150</td><td>Nama lengkap karyawan</td></tr>
+    <tr><td>5</td><td>no_hp</td><td>VARCHAR</td><td>20</td><td>Nomor HP karyawan</td></tr>
+    <tr><td>6</td><td>jenis_kelamin</td><td>VARCHAR</td><td>15</td><td>Jenis kelamin karyawan</td></tr>
+    <tr><td>7</td><td>alamat</td><td>TEXT</td><td>-</td><td>Alamat tempat tinggal</td></tr>
+    <tr><td>8</td><td>tanggal_bergabung</td><td>DATE</td><td>-</td><td>Tanggal mulai bekerja</td></tr>
+    <tr><td>9</td><td>nik_ktp</td><td>VARCHAR</td><td>30</td><td>Nomor Induk Kependudukan</td></tr>
+    <tr><td>10</td><td>nama_bank</td><td>VARCHAR</td><td>50</td><td>Nama bank untuk transfer gaji</td></tr>
+    <tr><td>11</td><td>no_rekening</td><td>VARCHAR</td><td>30</td><td>Nomor rekening bank</td></tr>
+    <tr><td>12</td><td>foto_referensi</td><td>VARCHAR</td><td>255</td><td>Path foto referensi wajah</td></tr>
+    <tr><td>13</td><td>face_descriptor</td><td>LONGTEXT</td><td>-</td><td>Data vektor wajah (face recognition)</td></tr>
+</table>
+
+<h2>Tabel 4.5 Tabel pelanggan</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_pelanggan</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>nama_pelanggan</td><td>VARCHAR</td><td>150</td><td>Nama lengkap pelanggan</td></tr>
+    <tr><td>3</td><td>no_hp</td><td>VARCHAR</td><td>20</td><td>Nomor HP pelanggan, Unique</td></tr>
+</table>
+
+<h2>Tabel 4.6 Tabel layanan</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_layanan</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>id_outlet</td><td>INT</td><td>-</td><td>Foreign Key → outlets(id_outlet)</td></tr>
+    <tr><td>3</td><td>nama_layanan</td><td>VARCHAR</td><td>150</td><td>Nama layanan</td></tr>
+    <tr><td>4</td><td>kategori</td><td>VARCHAR</td><td>100</td><td>Kategori layanan</td></tr>
+    <tr><td>5</td><td>satuan</td><td>VARCHAR</td><td>50</td><td>Satuan layanan (kg, pcs, pasang)</td></tr>
+    <tr><td>6</td><td>harga</td><td>DECIMAL</td><td>12,2</td><td>Harga per satuan</td></tr>
+    <tr><td>7</td><td>estimasi_jam</td><td>INT</td><td>-</td><td>Estimasi waktu selesai (jam)</td></tr>
+    <tr><td>8</td><td>status</td><td>ENUM</td><td>-</td><td>Status layanan (Aktif/Nonaktif)</td></tr>
+</table>
+
+<h2>Tabel 4.7 Tabel transaksi</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_transaksi</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>no_invoice</td><td>VARCHAR</td><td>30</td><td>Nomor nota unik, Unique</td></tr>
+    <tr><td>3</td><td>id_outlet</td><td>INT</td><td>-</td><td>Foreign Key → outlets(id_outlet)</td></tr>
+    <tr><td>4</td><td>id_pelanggan</td><td>INT</td><td>-</td><td>Foreign Key → pelanggan(id_pelanggan)</td></tr>
+    <tr><td>5</td><td>id_user</td><td>INT</td><td>-</td><td>Foreign Key → users(id_user)</td></tr>
+    <tr><td>6</td><td>tgl_masuk</td><td>DATETIME</td><td>-</td><td>Tanggal dan jam cucian masuk</td></tr>
+    <tr><td>7</td><td>estimasi_selesai</td><td>DATETIME</td><td>-</td><td>Estimasi waktu cucian selesai</td></tr>
+    <tr><td>8</td><td>total_harga</td><td>DECIMAL</td><td>12,2</td><td>Total harga sebelum diskon</td></tr>
+    <tr><td>9</td><td>diskon</td><td>DECIMAL</td><td>12,2</td><td>Nilai diskon</td></tr>
+    <tr><td>10</td><td>pembulatan</td><td>DECIMAL</td><td>12,2</td><td>Nilai pembulatan harga</td></tr>
+    <tr><td>11</td><td>grand_total</td><td>DECIMAL</td><td>12,2</td><td>Total akhir yang harus dibayar</td></tr>
+    <tr><td>12</td><td>bayar</td><td>DECIMAL</td><td>12,2</td><td>Jumlah uang yang dibayarkan</td></tr>
+    <tr><td>13</td><td>kembalian</td><td>DECIMAL</td><td>12,2</td><td>Uang kembalian pelanggan</td></tr>
+    <tr><td>14</td><td>metode_pembayaran</td><td>VARCHAR</td><td>30</td><td>Metode bayar (Tunai/Transfer/QRIS)</td></tr>
+    <tr><td>15</td><td>lokasi_rak</td><td>VARCHAR</td><td>50</td><td>Kode rak penyimpanan cucian</td></tr>
+    <tr><td>16</td><td>catatan</td><td>TEXT</td><td>-</td><td>Catatan tambahan transaksi</td></tr>
+    <tr><td>17</td><td>status_pembayaran</td><td>ENUM</td><td>-</td><td>Status bayar (Lunas/Belum Lunas)</td></tr>
+    <tr><td>18</td><td>status_laundry</td><td>ENUM</td><td>-</td><td>Status cucian (Proses/Selesai/Diambil)</td></tr>
+</table>
+
+<h2>Tabel 4.8 Tabel transaksi_detail</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_detail</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>id_transaksi</td><td>INT</td><td>-</td><td>Foreign Key → transaksi(id_transaksi)</td></tr>
+    <tr><td>3</td><td>id_layanan</td><td>INT</td><td>-</td><td>Foreign Key → layanan(id_layanan)</td></tr>
+    <tr><td>4</td><td>qty</td><td>INT</td><td>-</td><td>Jumlah/kuantitas layanan</td></tr>
+    <tr><td>5</td><td>harga</td><td>DECIMAL</td><td>12,2</td><td>Harga satuan saat transaksi</td></tr>
+    <tr><td>6</td><td>subtotal</td><td>DECIMAL</td><td>12,2</td><td>Subtotal (qty × harga)</td></tr>
+</table>
+
+<h2>Tabel 4.9 Tabel absensi</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_absensi</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>id_user</td><td>INT</td><td>-</td><td>Foreign Key → users(id_user)</td></tr>
+    <tr><td>3</td><td>tanggal</td><td>DATE</td><td>-</td><td>Tanggal absensi</td></tr>
+    <tr><td>4</td><td>waktu_masuk</td><td>DATETIME</td><td>-</td><td>Waktu check-in karyawan</td></tr>
+    <tr><td>5</td><td>waktu_pulang</td><td>DATETIME</td><td>-</td><td>Waktu check-out karyawan</td></tr>
+    <tr><td>6</td><td>foto_masuk</td><td>VARCHAR</td><td>255</td><td>Path foto selfie saat masuk</td></tr>
+    <tr><td>7</td><td>foto_pulang</td><td>VARCHAR</td><td>255</td><td>Path foto selfie saat pulang</td></tr>
+    <tr><td>8</td><td>lat_masuk</td><td>VARCHAR</td><td>30</td><td>Koordinat GPS lintang saat masuk</td></tr>
+    <tr><td>9</td><td>long_masuk</td><td>VARCHAR</td><td>30</td><td>Koordinat GPS bujur saat masuk</td></tr>
+    <tr><td>10</td><td>lat_pulang</td><td>VARCHAR</td><td>30</td><td>Koordinat GPS lintang saat pulang</td></tr>
+    <tr><td>11</td><td>long_pulang</td><td>VARCHAR</td><td>30</td><td>Koordinat GPS bujur saat pulang</td></tr>
+    <tr><td>12</td><td>status_verifikasi</td><td>ENUM</td><td>-</td><td>Status verifikasi (valid/invalid/pending)</td></tr>
+</table>
+
+<h2>Tabel 4.10 Tabel penggajian</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_penggajian</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>id_user</td><td>INT</td><td>-</td><td>Foreign Key → users(id_user)</td></tr>
+    <tr><td>3</td><td>bulan</td><td>VARCHAR</td><td>7</td><td>Periode gaji format YYYY-MM</td></tr>
+    <tr><td>4</td><td>gaji_pokok</td><td>DECIMAL</td><td>12,2</td><td>Gaji pokok bulanan</td></tr>
+    <tr><td>5</td><td>bonus</td><td>DECIMAL</td><td>12,2</td><td>Total bonus karyawan</td></tr>
+    <tr><td>6</td><td>potongan</td><td>DECIMAL</td><td>12,2</td><td>Total potongan karyawan</td></tr>
+    <tr><td>7</td><td>total_gaji</td><td>DECIMAL</td><td>12,2</td><td>Total gaji bersih yang diterima</td></tr>
+    <tr><td>8</td><td>catatan</td><td>TEXT</td><td>-</td><td>Catatan penggajian</td></tr>
+</table>
+
+<h2>Tabel 4.11 Tabel kategori_pengeluaran</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_kategori</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>nama_kategori</td><td>VARCHAR</td><td>100</td><td>Nama kategori pengeluaran</td></tr>
+</table>
+
+<h2>Tabel 4.12 Tabel pengeluaran</h2>
+<table>
+    <tr>
+        <th>No</th>
+        <th>Nama Field</th>
+        <th>Tipe Data</th>
+        <th>Panjang</th>
+        <th>Keterangan</th>
+    </tr>
+    <tr><td>1</td><td>id_pengeluaran</td><td>INT</td><td>-</td><td>Primary Key, Auto Increment</td></tr>
+    <tr><td>2</td><td>id_outlet</td><td>INT</td><td>-</td><td>Foreign Key → outlets(id_outlet)</td></tr>
+    <tr><td>3</td><td>id_user</td><td>INT</td><td>-</td><td>Foreign Key → users(id_user)</td></tr>
+    <tr><td>4</td><td>id_kategori</td><td>INT</td><td>-</td><td>Foreign Key → kategori_pengeluaran(id_kategori)</td></tr>
+    <tr><td>5</td><td>nominal</td><td>DECIMAL</td><td>12,2</td><td>Jumlah biaya pengeluaran</td></tr>
+    <tr><td>6</td><td>keterangan</td><td>TEXT</td><td>-</td><td>Deskripsi pengeluaran</td></tr>
+    <tr><td>7</td><td>tanggal</td><td>DATE</td><td>-</td><td>Tanggal pengeluaran</td></tr>
+</table>
+
+</body>
+</html>

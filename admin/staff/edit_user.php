@@ -47,14 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Data Karyawan
         $nama_lengkap  = trim($_POST['nama_lengkap']);
         $outlet_id     = $_POST['outlet_id'];
-        $no_hp         = trim($_POST['no_telepon']);
-        $jenis_kelamin = $_POST['jenis_kelamin'];
-        $alamat        = trim($_POST['alamat']);
+        $no_hp         = trim($_POST['no_telepon'] ?? '');
+        $jenis_kelamin = $_POST['jenis_kelamin'] ?? '';
+        $alamat        = trim($_POST['alamat'] ?? '');
 
         // Data Bank & NIK
-        $nik_ktp       = trim($_POST['nik_ktp']);
-        $nama_bank     = trim($_POST['nama_bank']);
-        $no_rekening   = trim($_POST['no_rekening']);
+        $nik_ktp       = trim($_POST['nik_ktp'] ?? '');
+        $nama_bank     = trim($_POST['nama_bank'] ?? '');
+        $no_rekening   = trim($_POST['no_rekening'] ?? '');
 
         if (empty($nama_lengkap) || empty($username)) {
             throw new Exception("Nama Lengkap dan Username wajib diisi.");
@@ -185,7 +185,7 @@ include '../../includes/header.php';
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-bold text-gray-800 small">Nama Lengkap (Sesuai KTP)*</label>
+                                        <label class="form-label fw-bold text-gray-800 small">Nama Lengkap / Nama Akun*</label>
                                         <input type="text" class="form-control" name="nama_lengkap" value="<?php echo htmlspecialchars($user['nama_lengkap'] ?? ''); ?>" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
@@ -201,6 +201,7 @@ include '../../includes/header.php';
                                     </div>
                                 </div>
 
+                                <?php if ($user['id_role'] != 4): ?>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label fw-bold text-gray-800 small">Nomor HP / WhatsApp</label>
@@ -245,6 +246,7 @@ include '../../includes/header.php';
                                         <input type="text" class="form-control" name="no_rekening" value="<?php echo htmlspecialchars($user['no_rekening'] ?? ''); ?>" placeholder="Contoh: 1234567890">
                                     </div>
                                 </div>
+                                <?php endif; ?>
 
                                 <div class="d-flex justify-content-end mt-4">
                                     <button type="submit" class="btn btn-success px-5 fw-bold shadow">

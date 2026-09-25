@@ -149,55 +149,68 @@ $result = $conn->query($sql);
     </div>
 </div>
 
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
 <div class="modal fade" id="modalOutlet" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title font-weight-bold" id="modalTitle"><i class="fas fa-store"></i> Tambah Outlet</h5>
-                <button type="button" class="close text-white" data-bs-dismiss="modal">&times;</button>
+                <h5 class="modal-title fw-bold" id="modalTitle"><i class="fas fa-store me-2"></i>Tambah Outlet</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <form method="POST">
                 <?php echo csrfField(); ?>
-                <div class="modal-body bg-light">
-                    <input type="hidden" name="aksi" id="aksiOutlet" value="tambah">
-                    <input type="hidden" name="id_outlet" id="idOutlet">
-                    
-                    <div class="form-group">
-                        <label class="font-weight-bold">Nama Outlet / Cabang <span class="text-danger">*</span></label>
-                        <input type="text" name="nama_outlet" id="namaOutlet" class="form-control" required placeholder="Contoh: LaundryPro Pusat">
-                    </div>
-                    <div class="form-group">
-                        <label class="font-weight-bold">Nomor Telepon / WA</label>
-                        <input type="text" name="no_telp" id="telpOutlet" class="form-control" placeholder="Akan tercetak di nota kasir">
-                    </div>
-                    <div class="form-group mb-3">
-                        <label class="font-weight-bold">Alamat Lengkap</label>
-                        <textarea name="alamat" id="alamatOutlet" class="form-control" rows="3" placeholder="Alamat lengkap outlet..."></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label class="font-weight-bold">Latitude (GPS)</label>
-                            <input type="text" name="latitude" id="latOutlet" class="form-control" placeholder="-7.250445">
+                <input type="hidden" name="aksi" id="aksiOutlet" value="tambah">
+                <input type="hidden" name="id_outlet" id="idOutlet">
+                <input type="hidden" name="latitude" id="latOutlet">
+                <input type="hidden" name="longitude" id="longOutlet">
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nama Outlet / Cabang <span class="text-danger">*</span></label>
+                            <input type="text" name="nama_outlet" id="namaOutlet" class="form-control" required placeholder="Contoh: Mending Pusat">
                         </div>
-                        <div class="col-md-6 form-group">
-                            <label class="font-weight-bold">Longitude (GPS)</label>
-                            <input type="text" name="longitude" id="longOutlet" class="form-control" placeholder="112.768845">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nomor Telepon / WA</label>
+                            <input type="text" name="no_telp" id="telpOutlet" class="form-control" placeholder="08xxxxxxxxxx">
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="font-weight-bold">Radius Batas Absen (Meter)</label>
-                        <input type="number" name="radius_meter" id="radiusOutlet" class="form-control" value="50" min="5" max="500">
-                        <small class="text-muted">Karyawan wajib berada dalam radius ini dari titik GPS outlet saat absen.</small>
-                    </div>
-                    <div class="mb-3">
-                        <button type="button" class="btn btn-outline-info btn-sm w-100" onclick="getLokasiSaatIni()">
-                            <i class="fas fa-crosshairs me-1"></i> Gunakan Lokasi GPS Saya Saat Ini
-                        </button>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Alamat Lengkap</label>
+                            <textarea name="alamat" id="alamatOutlet" class="form-control" rows="2" placeholder="Jl. Contoh No. 123, Kelurahan, Kecamatan..."></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Radius Absen (Meter)</label>
+                            <input type="number" name="radius_meter" id="radiusOutlet" class="form-control" value="50" min="5" max="500">
+                            <div class="form-text">Radius batas area absen karyawan.</div>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">Koordinat GPS Terpilih</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fas fa-crosshairs text-info"></i></span>
+                                <input type="text" id="displayLatLng" class="form-control bg-light" readonly placeholder="Pilih titik di peta...">
+                                <button type="button" class="btn btn-outline-secondary" onclick="getLokasiSaatIni()" title="Gunakan lokasi saya">
+                                    <i class="fas fa-location-arrow"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Klik pada peta untuk menentukan lokasi outlet.</div>
+                        </div>
+
+                        <!-- Peta Picker -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold d-flex align-items-center gap-2">
+                                <i class="fas fa-map-marked-alt text-danger"></i> Pilih Lokasi di Peta
+                                <span class="badge bg-info fw-normal">Klik untuk menentukan titik</span>
+                            </label>
+                            <div id="mapPicker" style="height: 300px; border-radius: 10px; border: 2px solid #dee2e6; z-index: 0;"></div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-white">
+
+                <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary font-weight-bold shadow-sm"><i class="fas fa-save me-1"></i> Simpan Data</button>
+                    <button type="submit" class="btn btn-primary fw-bold"><i class="fas fa-save me-1"></i> Simpan Data</button>
                 </div>
             </form>
         </div>
@@ -212,29 +225,117 @@ $result = $conn->query($sql);
 
 <?php require_once '../../includes/footer.php'; ?>
 
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
-    function getLokasiSaatIni() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                $('#latOutlet').val(position.coords.latitude.toFixed(8));
-                $('#longOutlet').val(position.coords.longitude.toFixed(8));
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Koordinat Diambil',
-                    text: `Lat: ${position.coords.latitude}, Long: ${position.coords.longitude}`,
-                    timer: 2000,
-                    showConfirmButton: false
+    var mapInstance = null;
+    var mapMarker = null;
+
+    // Inisialisasi peta saat modal terbuka
+    document.getElementById('modalOutlet').addEventListener('shown.bs.modal', function() {
+        setTimeout(function() {
+            // Jika peta sudah ada, hapus dan buat ulang (fix Leaflet di modal)
+            if (mapInstance) {
+                mapInstance.remove();
+                mapInstance = null;
+                mapMarker = null;
+            }
+
+            var savedLat = parseFloat($('#latOutlet').val());
+            var savedLng = parseFloat($('#longOutlet').val());
+            var startLat = (!isNaN(savedLat) && savedLat !== 0) ? savedLat : -6.200000;
+            var startLng = (!isNaN(savedLng) && savedLng !== 0) ? savedLng : 106.816666;
+            var startZoom = (!isNaN(savedLat) && savedLat !== 0) ? 16 : 12;
+
+            mapInstance = L.map('mapPicker').setView([startLat, startLng], startZoom);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
+                maxZoom: 19
+            }).addTo(mapInstance);
+
+            // Jika sudah ada koordinat tersimpan, taruh marker
+            if (!isNaN(savedLat) && savedLat !== 0) {
+                mapMarker = L.marker([savedLat, savedLng], { draggable: true }).addTo(mapInstance);
+                mapMarker.bindPopup('Lokasi Outlet').openPopup();
+                updateKoordinatDisplay(savedLat, savedLng);
+                mapMarker.on('dragend', function(e) {
+                    var pos = e.target.getLatLng();
+                    simpanKoordinat(pos.lat, pos.lng);
                 });
-            }, function(error) {
-                Swal.fire('Gagal GPS', 'Tidak bisa mengambil lokasi GPS. Pastikan izin lokasi aktif.', 'error');
+            }
+
+            // Klik di peta → set/pindah marker
+            mapInstance.on('click', function(e) {
+                var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+
+                if (mapMarker) {
+                    mapMarker.setLatLng([lat, lng]);
+                } else {
+                    mapMarker = L.marker([lat, lng], { draggable: true }).addTo(mapInstance);
+                    mapMarker.bindPopup('Lokasi Outlet');
+                    mapMarker.on('dragend', function(ev) {
+                        var pos = ev.target.getLatLng();
+                        simpanKoordinat(pos.lat, pos.lng);
+                    });
+                }
+                simpanKoordinat(lat, lng);
             });
-        } else {
-            Swal.fire('Error', 'Browser tidak mendukung Geolocation.', 'error');
+        }, 300); // tunggu modal selesai render
+    });
+
+    // Hancurkan peta saat modal ditutup
+    document.getElementById('modalOutlet').addEventListener('hidden.bs.modal', function() {
+        if (mapInstance) {
+            mapInstance.remove();
+            mapInstance = null;
+            mapMarker = null;
         }
+    });
+
+    function simpanKoordinat(lat, lng) {
+        $('#latOutlet').val(lat.toFixed(8));
+        $('#longOutlet').val(lng.toFixed(8));
+        updateKoordinatDisplay(lat, lng);
+    }
+
+    function updateKoordinatDisplay(lat, lng) {
+        $('#displayLatLng').val(lat.toFixed(6) + ', ' + lng.toFixed(6));
+    }
+
+    function getLokasiSaatIni() {
+        if (!navigator.geolocation) {
+            Swal.fire('Error', 'Browser tidak mendukung Geolocation.', 'error');
+            return;
+        }
+        Swal.fire({ title: 'Mengambil lokasi...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+        navigator.geolocation.getCurrentPosition(function(position) {
+            Swal.close();
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+            simpanKoordinat(lat, lng);
+            if (mapInstance) {
+                mapInstance.setView([lat, lng], 17);
+                if (mapMarker) {
+                    mapMarker.setLatLng([lat, lng]);
+                } else {
+                    mapMarker = L.marker([lat, lng], { draggable: true }).addTo(mapInstance);
+                    mapMarker.bindPopup('Lokasi Anda').openPopup();
+                    mapMarker.on('dragend', function(e) {
+                        var pos = e.target.getLatLng();
+                        simpanKoordinat(pos.lat, pos.lng);
+                    });
+                }
+            }
+        }, function() {
+            Swal.fire('Gagal', 'Tidak bisa mengambil lokasi GPS. Pastikan izin lokasi aktif di browser.', 'error');
+        });
     }
 
     function bukaModalTambah() {
-        $('#modalTitle').html('<i class="fas fa-store"></i> Tambah Outlet Baru');
+        $('#modalTitle').html('<i class="fas fa-store me-2"></i>Tambah Outlet Baru');
         $('#aksiOutlet').val('tambah');
         $('#idOutlet').val('');
         $('#namaOutlet').val('');
@@ -242,12 +343,13 @@ $result = $conn->query($sql);
         $('#alamatOutlet').val('');
         $('#latOutlet').val('');
         $('#longOutlet').val('');
+        $('#displayLatLng').val('');
         $('#radiusOutlet').val('50');
         $('#modalOutlet').modal('show');
     }
 
     function bukaModalEdit(id, nama, alamat, telp, lat, long, radius) {
-        $('#modalTitle').html('<i class="fas fa-edit"></i> Edit Data Outlet');
+        $('#modalTitle').html('<i class="fas fa-edit me-2"></i>Edit Data Outlet');
         $('#aksiOutlet').val('edit');
         $('#idOutlet').val(id);
         $('#namaOutlet').val(nama);
@@ -255,6 +357,7 @@ $result = $conn->query($sql);
         $('#telpOutlet').val(telp);
         $('#latOutlet').val(lat || '');
         $('#longOutlet').val(long || '');
+        $('#displayLatLng').val(lat && long ? parseFloat(lat).toFixed(6) + ', ' + parseFloat(long).toFixed(6) : '');
         $('#radiusOutlet').val(radius || 50);
         $('#modalOutlet').modal('show');
     }
@@ -262,13 +365,13 @@ $result = $conn->query($sql);
     function hapusOutlet(id, nama) {
         Swal.fire({
             title: 'Hapus Outlet?',
-            html: `Anda yakin ingin menghapus <b>${nama}</b>?<br><small class="text-danger">Aksi ini tidak bisa dibatalkan jika belum ada transaksi.</small>`,
+            html: 'Anda yakin ingin menghapus <b>' + nama + '</b>?<br><small class="text-danger">Aksi ini tidak bisa dibatalkan jika belum ada transaksi.</small>',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#e74a3b',
             confirmButtonText: 'Ya, Hapus!',
             cancelButtonText: 'Batal'
-        }).then((result) => {
+        }).then(function(result) {
             if (result.isConfirmed) {
                 $('#idHapus').val(id);
                 $('#formHapus').submit();

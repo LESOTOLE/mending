@@ -118,7 +118,7 @@ include '../../includes/header.php';
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-center">
-                                        <div class="btn-group btn-group-sm">
+                                        <div class="btn-group btn-group-sm btn-group-action">
                                             <?php if (!empty($row['foto_masuk'])): ?>
                                                 <button class="btn btn-info shadow-sm"
                                                     onclick="showSelfie('<?php echo safeJsString($row['foto_masuk']); ?>', '<?php echo safeJsString($row['nama_lengkap']); ?>', 'Masuk: <?php echo $row['waktu_masuk']; ?>', '<?php echo $row['lat_masuk']; ?>', '<?php echo $row['long_masuk']; ?>')">

@@ -84,10 +84,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Mending Laundry</title>
-    <link href="/mending/assets/vendor/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/mending/assets/vendor/css/all.min.css" rel="stylesheet">
-    <link href="/mending/assets/vendor/css/inter.css" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/web3.css">
+    <link href="<?= ASSETS_URL ?>vendor/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?= ASSETS_URL ?>vendor/css/all.min.css" rel="stylesheet">
+    <link href="<?= ASSETS_URL ?>vendor/css/inter.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?= ASSETS_URL ?>css/web3.css">
     <style>
         body {
             height: 100vh;
@@ -97,16 +97,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             /* Latar belakang biru soft elegan untuk halaman login */
             background: linear-gradient(135deg, #f0f4f8 0%, #dbeafe 100%);
         }
+
         .card-login {
             width: 100%;
             max-width: 420px;
             position: relative;
             z-index: 1;
             overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
             border-radius: 16px !important;
-            border: 1px solid rgba(0,0,0,0.05) !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
         }
+
         .icon-circle {
             width: 80px;
             height: 80px;
@@ -121,11 +123,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
             animation: pulse 2s infinite;
         }
+
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(79, 70, 229, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(79, 70, 229, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+            }
         }
+
         .card-title {
             font-weight: 800;
             letter-spacing: 2px;

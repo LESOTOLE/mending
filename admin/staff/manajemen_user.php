@@ -115,22 +115,24 @@ include '../../includes/header.php';
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-center">
-                                        <a href="detail_user.php?id=<?php echo $row['id_user']; ?>" class="btn btn-info btn-sm btn-circle" title="Lihat Detail">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
+                                        <div class="btn-group-action justify-content-center">
+                                            <a href="detail_user.php?id=<?php echo $row['id_user']; ?>" class="btn btn-info btn-sm btn-circle" title="Lihat Detail">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
 
-                                        <a href="edit_user.php?id=<?php echo $row['id_user']; ?>" class="btn btn-warning btn-sm btn-circle" title="Edit">
-                                            <i class="fas fa-pen"></i>
-                                        </a>
+                                            <a href="edit_user.php?id=<?php echo $row['id_user']; ?>" class="btn btn-warning btn-sm btn-circle" title="Edit">
+                                                <i class="fas fa-pen"></i>
+                                            </a>
 
-                                        <form class="form-delete" method="POST" action="proses_user.php" style="display:inline-block;">
-                                            <?php echo csrfField(); ?>
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="id_user" value="<?php echo $row['id_user']; ?>">
-                                            <button type="button" class="btn btn-danger btn-sm btn-circle btn-delete-confirm" data-user-name="<?php echo htmlspecialchars($row['nama_lengkap'] ?? $row['username']); ?>" title="Hapus">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                            <form class="form-delete m-0" method="POST" action="proses_user.php" style="display:inline-block;">
+                                                <?php echo csrfField(); ?>
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="id_user" value="<?php echo $row['id_user']; ?>">
+                                                <button type="button" class="btn btn-danger btn-sm btn-circle btn-delete-confirm" data-user-name="<?php echo htmlspecialchars($row['nama_lengkap'] ?? $row['username']); ?>" title="Hapus">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -146,7 +148,7 @@ include '../../includes/header.php';
     </div>
 
 </div>
-<script src="/mending/assets/vendor/js/sweetalert2.all.min.js"></script>
+<script src="<?= ASSETS_URL ?>vendor/js/sweetalert2.all.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         <?php if (isset($_SESSION['form_status'])): ?>

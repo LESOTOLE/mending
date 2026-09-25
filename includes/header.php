@@ -7,15 +7,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo APP_NAME; ?> - ...</title>
-    <link href="/mending/assets/vendor/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/mending/assets/vendor/css/all.min.css">
-    <link rel="stylesheet" href="/mending/assets/vendor/css/sweetalert2.min.css">
+    <link href="<?= ASSETS_URL ?>vendor/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?= ASSETS_URL ?>vendor/css/all.min.css">
+    <link rel="stylesheet" href="<?= ASSETS_URL ?>vendor/css/sweetalert2.min.css">
     
     <!-- AOS Animation CSS -->
-    <link href="/mending/assets/vendor/css/aos.css" rel="stylesheet">
+    <link href="<?= ASSETS_URL ?>vendor/css/aos.css" rel="stylesheet">
     
     <!-- Link Web3 Theme -->
-    <link rel="stylesheet" href="/mending/assets/css/web3.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= ASSETS_URL ?>css/web3.css?v=<?= time() ?>">
+
     
     <style>
         /* Gaya Kustom Struktur Sidebar (Warna dikendalikan web3.css) */
@@ -74,18 +75,21 @@
         }
 @media (max-width: 767.98px) {
     .sidebar {
-        position: fixed; /* Menempel di layar mobile */
+        position: fixed !important; /* Menempel di layar mobile */
         top: 0;
         left: 0;
-        z-index: 1030;
+        z-index: 1050 !important;
         height: 100vh;
-        margin-left: -250px; /* Sembunyikan dari layar */
-        transition: margin-left 0.3s ease-in-out;
-        overflow-y: hidden; /* Memungkinkan menu di-scroll di mobile */
+        width: 250px !important;
+        transform: translateX(-100%);
+        margin-left: 0 !important;
+        transition: transform 0.3s ease-in-out;
+        overflow-y: auto; /* Scroll container sidebar di mobile */
+        background-color: var(--sidebar-bg) !important;
     }
 
     .sidebar.show-mobile {
-        margin-left: 0; /* Tampilkan ketika kelas ini ditambahkan oleh JS */
+        transform: translateX(0); /* Tampilkan ketika kelas ini ditambahkan oleh JS */
     }
     
     /* Overlay untuk menutup interaksi di luar menu */
@@ -93,10 +97,10 @@
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
         background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1020;
+        z-index: 1040;
         display: none;
         opacity: 0;
         transition: opacity 0.3s ease-in-out;

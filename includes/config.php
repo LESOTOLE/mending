@@ -14,7 +14,23 @@ if (file_exists($env_path)) {
 define('APP_NAME', 'MENDING LAUNDRY');
 define('APP_ADDRESS', 'Jl. Kebahagiaan ');
 define('APP_PHONE', '08xx-xxxx-xxxx');
-define('BASE_URL', 'http://localhost/mending/admin/');
+
+// ============================================================
+// AUTO-DETECT URL — Bekerja di localhost maupun hosting manapun
+// Tidak perlu diubah saat pindah hosting.
+// ============================================================
+if (!defined('APP_URL')) {
+    $protocol  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host      = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    // Hitung path relatif dari document root ke folder project ini
+    $doc_root  = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), '/');
+    $app_root  = rtrim(str_replace('\\', '/', dirname(__DIR__)), '/');
+    $sub_path  = str_replace($doc_root, '', $app_root);
+    define('APP_URL',    $protocol . '://' . $host . $sub_path . '/');
+    define('ASSETS_URL', $protocol . '://' . $host . $sub_path . '/assets/');
+    define('BASE_URL',   $protocol . '://' . $host . $sub_path . '/admin/');
+}
+
 
 /**
  * Fungsi untuk membuat koneksi ke database MySQL.
@@ -53,10 +69,7 @@ function hashPassword($password)
 function checkAuth($allowed_roles = [])
 {
     if (!isset($_SESSION['id_user'])) {
-        // Deteksi apakah file berada di subfolder (keuangan/, staff/, dll)
-        $current_dir = basename(dirname($_SERVER['PHP_SELF']));
-        $login_path = ($current_dir !== 'admin') ? '../login.php' : 'login.php';
-        header("Location: $login_path");
+        header("Location: " . BASE_URL . "login.php");
         exit;
     }
 
@@ -64,9 +77,7 @@ function checkAuth($allowed_roles = [])
         $user_role = $_SESSION['id_role'] ?? 0;
 
         if (!in_array($user_role, $allowed_roles)) {
-            $current_dir = basename(dirname($_SERVER['PHP_SELF']));
-            $dash_path = ($current_dir !== 'admin') ? '../dashboard.php' : 'dashboard.php';
-            header("Location: $dash_path");
+            header("Location: " . BASE_URL . "dashboard.php");
             exit;
         }
     }

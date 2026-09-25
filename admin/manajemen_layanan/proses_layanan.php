@@ -15,12 +15,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($action == 'create') {
         $id_outlet = (int)$_POST['outlet_id'];
         $nama      = trim($_POST['nama_layanan']);
+        $kategori  = trim($_POST['kategori'] ?? 'Cuci Kiloan');
+        if (empty($kategori)) $kategori = 'Cuci Kiloan';
         $satuan    = trim($_POST['satuan']);
         $harga     = $_POST['harga_per_satuan'];
         $estimasi  = (int)$_POST['estimasi_durasi'];
 
-        $stmt = $conn->prepare("INSERT INTO layanan (id_outlet, nama_layanan, satuan, harga, estimasi_jam) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("issdi", $id_outlet, $nama, $satuan, $harga, $estimasi);
+        $stmt = $conn->prepare("INSERT INTO layanan (id_outlet, nama_layanan, kategori, satuan, harga, estimasi_jam) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("isssdi", $id_outlet, $nama, $kategori, $satuan, $harga, $estimasi);
 
         if ($stmt->execute()) {
             $_SESSION['form_status'] = 'success';
@@ -37,12 +39,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id        = (int)$_POST['id'];
         $id_outlet = (int)$_POST['outlet_id'];
         $nama      = trim($_POST['nama_layanan']);
+        $kategori  = trim($_POST['kategori'] ?? 'Cuci Kiloan');
+        if (empty($kategori)) $kategori = 'Cuci Kiloan';
         $satuan    = trim($_POST['satuan']);
         $harga     = $_POST['harga_per_satuan'];
         $estimasi  = (int)$_POST['estimasi_durasi'];
 
-        $stmt = $conn->prepare("UPDATE layanan SET id_outlet=?, nama_layanan=?, satuan=?, harga=?, estimasi_jam=? WHERE id_layanan=?");
-        $stmt->bind_param("issdii", $id_outlet, $nama, $satuan, $harga, $estimasi, $id);
+        $stmt = $conn->prepare("UPDATE layanan SET id_outlet=?, nama_layanan=?, kategori=?, satuan=?, harga=?, estimasi_jam=? WHERE id_layanan=?");
+        $stmt->bind_param("isssdii", $id_outlet, $nama, $kategori, $satuan, $harga, $estimasi, $id);
 
         if ($stmt->execute()) {
             $_SESSION['form_status'] = 'success';
@@ -64,8 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['form_message'] = 'Cabang Sumber dan Tujuan tidak boleh sama!';
         } else {
             // Query untuk menjiplak data dari cabang sumber ke cabang tujuan
-            $sql_copy = "INSERT INTO layanan (id_outlet, nama_layanan, satuan, harga, estimasi_jam)
-                         SELECT $target, nama_layanan, satuan, harga, estimasi_jam 
+            $sql_copy = "INSERT INTO layanan (id_outlet, nama_layanan, kategori, satuan, harga, estimasi_jam)
+                         SELECT $target, nama_layanan, kategori, satuan, harga, estimasi_jam 
                          FROM layanan 
                          WHERE id_outlet = $source";
 

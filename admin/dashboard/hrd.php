@@ -139,7 +139,7 @@ $json_gaji_data = json_encode($chart_gaji_data);
     </div>
 </div>
 
-<script src="/mending/assets/vendor/js/chart.js"></script>
+<script src="<?= ASSETS_URL ?>vendor/js/chart.js"></script>
 <script>
     const ctxGaji = document.getElementById('salaryChart');
     if (ctxGaji) {

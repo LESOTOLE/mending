@@ -84,45 +84,71 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // JIKA PELANGGAN BARU, SIMPAN KE DATABASE
             $nama_pelanggan = trim($_POST['nama_pelanggan'] ?? '');
             $no_hp_pelanggan = trim($_POST['no_hp_pelanggan'] ?? '');
-            
+            $pelanggan_info = null; // Untuk notifikasi ke kasir jika no HP sudah terdaftar
+
             if ($id_pelanggan === 0 && !empty($nama_pelanggan)) {
-                // Cek apakah nomor HP sudah ada
+                // Cek apakah nomor HP sudah terdaftar (cegah redundansi)
                 if (!empty($no_hp_pelanggan)) {
-                    $cek = $conn->prepare("SELECT id_pelanggan FROM pelanggan WHERE no_hp = ?");
+                    $cek = $conn->prepare("SELECT id_pelanggan, nama_pelanggan FROM pelanggan WHERE no_hp = ?");
                     $cek->bind_param("s", $no_hp_pelanggan);
                     $cek->execute();
                     $res_cek = $cek->get_result();
                     if ($row_cek = $res_cek->fetch_assoc()) {
-                        $id_pelanggan = $row_cek['id_pelanggan'];
+                        // No HP sudah terdaftar → pakai data yang sudah ada
+                        $id_pelanggan     = $row_cek['id_pelanggan'];
+                        $nama_pelanggan   = $row_cek['nama_pelanggan'];
+                        $no_hp_pelanggan  = $no_hp_pelanggan;
+                        // Beri tahu kasir bahwa data pelanggan lama dipakai
+                        $pelanggan_info   = "No HP sudah terdaftar atas nama \"{$row_cek['nama_pelanggan']}\". Data pelanggan yang ada digunakan.";
                     }
+                    $cek->close();
                 }
-                
-                // Jika masih 0, insert baru
+
+                // Jika masih 0 (benar-benar pelanggan baru), insert baru
                 if ($id_pelanggan === 0) {
                     $stmtPel = $conn->prepare("INSERT INTO pelanggan (nama_pelanggan, no_hp) VALUES (?, ?)");
                     $stmtPel->bind_param("ss", $nama_pelanggan, $no_hp_pelanggan);
-                    $stmtPel->execute();
-                    $id_pelanggan = $conn->insert_id;
+                    if (!$stmtPel->execute()) {
+                        // Fallback: jika UNIQUE constraint DB terpicu (race condition), ambil data yang sudah ada
+                        if ($conn->errno == 1062 && !empty($no_hp_pelanggan)) {
+                            $stmtFb = $conn->prepare("SELECT id_pelanggan, nama_pelanggan FROM pelanggan WHERE no_hp = ?");
+                            $stmtFb->bind_param("s", $no_hp_pelanggan);
+                            $stmtFb->execute();
+                            $resFb = $stmtFb->get_result()->fetch_assoc();
+                            if ($resFb) {
+                                $id_pelanggan   = $resFb['id_pelanggan'];
+                                $nama_pelanggan = $resFb['nama_pelanggan'];
+                                $pelanggan_info = "No HP sudah terdaftar atas nama \"{$resFb['nama_pelanggan']}\". Data pelanggan yang ada digunakan.";
+                            }
+                            $stmtFb->close();
+                        } else {
+                            throw new Exception("Gagal menyimpan data pelanggan: " . $stmtPel->error);
+                        }
+                    } else {
+                        $id_pelanggan = $conn->insert_id;
+                    }
+                    $stmtPel->close();
                 }
             }
 
             $total_harga = (float)($_POST['total_harga'] ?? 0);
             $diskon = (float)($_POST['diskon'] ?? 0);
-            $grand_total = $total_harga - $diskon;
+            $metode_pembayaran = $_POST['metode_pembayaran'] ?? 'Tunai';
+            $pembulatan = ($metode_pembayaran === 'Tunai') ? (float)($_POST['pembulatan'] ?? 0) : 0;
+            $grand_total = $total_harga - $diskon + $pembulatan;
             if ($grand_total < 0) $grand_total = 0;
             
             $bayar = (float)($_POST['jumlah_bayar'] ?? 0);
             $kembalian = (float)($_POST['kembalian'] ?? 0);
             $status_pembayaran = $_POST['status_pembayaran'] ?? 'Belum Lunas';
-            $metode_pembayaran = $_POST['metode_pembayaran'] ?? 'Tunai';
             $lokasi_rak = $_POST['lokasi_rak'] ?? '';
             $catatan = trim($_POST['catatan'] ?? '');
             $tgl_masuk = date('Y-m-d H:i:s');
             $no_invoice = 'INV-' . date('YmdHis') . rand(10, 99);
 
-            $stmt = $conn->prepare("INSERT INTO transaksi (no_invoice, id_outlet, id_pelanggan, id_user, tgl_masuk, total_harga, diskon, grand_total, bayar, kembalian, metode_pembayaran, lokasi_rak, catatan, status_pembayaran) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO transaksi (no_invoice, id_outlet, id_pelanggan, id_user, tgl_masuk, total_harga, diskon, pembulatan, grand_total, bayar, kembalian, metode_pembayaran, lokasi_rak, catatan, status_pembayaran) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-            $stmt->bind_param("siiisdddddssss", $no_invoice, $id_outlet, $id_pelanggan, $id_user, $tgl_masuk, $total_harga, $diskon, $grand_total, $bayar, $kembalian, $metode_pembayaran, $lokasi_rak, $catatan, $status_pembayaran);
+            $stmt->bind_param("siiisddddddssss", $no_invoice, $id_outlet, $id_pelanggan, $id_user, $tgl_masuk, $total_harga, $diskon, $pembulatan, $grand_total, $bayar, $kembalian, $metode_pembayaran, $lokasi_rak, $catatan, $status_pembayaran);
 
             if (!$stmt->execute()) {
                 throw new Exception("Gagal menyimpan data transaksi utama: " . $stmt->error);
@@ -141,6 +167,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmtDetail->bind_param("iiddd", $id_transaksi_baru, $id_layanan, $qty, $harga, $subtotal);
                 if (!$stmtDetail->execute()) throw new Exception("Gagal menyimpan detail layanan: " . $stmtDetail->error);
             }
+
+            // Hitung estimasi_selesai dari MAX(estimasi_jam) semua item yang dibeli
+            $stmtEst = $conn->prepare(
+                "SELECT MAX(l.estimasi_jam) as max_jam
+                 FROM transaksi_detail td
+                 JOIN layanan l ON td.id_layanan = l.id_layanan
+                 WHERE td.id_transaksi = ?"
+            );
+            $stmtEst->bind_param("i", $id_transaksi_baru);
+            $stmtEst->execute();
+            $rowEst = $stmtEst->get_result()->fetch_assoc();
+            $max_jam = (int)($rowEst['max_jam'] ?? 24); // default 24 jam jika tidak ada
+            $estimasi_selesai = date('Y-m-d H:i:s', strtotime($tgl_masuk . " +{$max_jam} hours"));
+            $stmtEst->close();
+
+            // Simpan estimasi_selesai ke tabel transaksi
+            $stmtUpEst = $conn->prepare("UPDATE transaksi SET estimasi_selesai = ? WHERE id_transaksi = ?");
+            $stmtUpEst->bind_param("si", $estimasi_selesai, $id_transaksi_baru);
+            $stmtUpEst->execute();
+            $stmtUpEst->close();
 
             $conn->commit();
 
@@ -166,7 +212,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Balas dengan JSON
             header('Content-Type: application/json');
-            echo json_encode(['status' => 'success', 'pesan' => 'Transaksi Berhasil Disimpan!', 'id_transaksi' => $id_transaksi_baru]);
+            echo json_encode([
+                'status'          => 'success',
+                'pesan'           => 'Transaksi Berhasil Disimpan!',
+                'id_transaksi'    => $id_transaksi_baru,
+                'pelanggan_info'  => $pelanggan_info, // null atau pesan jika no HP sudah terdaftar
+            ]);
             exit;
 
            
